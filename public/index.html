@@ -121,29 +121,41 @@ search.addEventListener("input",e=>{
 });
 
 async function detail(unit){
-  const d = await fetch('/api/data?action=detail&unit='+unit).then(r=>r.json());
-  const tung = d.data.tunggakan[0];
-  const status = tung && (Number(tung.y2024_uang)+Number(tung.y2025_uang)+Number(tung.y2026_uang))>0
-    ? "🔴 MENUNGGAK" : "🟢 LUNAS";
+  const d = await fetch('/api/data?action=detail&unit='+encodeURIComponent(unit)).then(r=>r.json());
+  const x = d.data;
 
   modal.classList.remove("hidden");
   modal.classList.add("flex");
 
-  mdTitle.innerText = "Unit "+unit+" — "+status;
+  mdTitle.innerText = "Unit "+x.unit+" — " + (x.status==="LUNAS" ? "🟢 LUNAS" : "🔴 MENUNGGAK");
 
   mdBody.innerHTML = `
-  <p><b>Nama:</b> ${d.data.penghuni[0]?.Nama||"-"}</p>
-  <p><b>No Telp:</b> ${d.data.penghuni[0]?.["No Telp"]||"-"}</p>
+  <div class="grid grid-cols-2 gap-4 mb-3">
+    <div><b>Nama:</b><br>${x.penghuni?.Nama||"-"}</div>
+    <div><b>No Telp:</b><br>${x.penghuni?.["No Telp"]||"-"}</div>
+    <div><b>Total Bayar:</b><br>Rp ${x.totalBayar.toLocaleString("id-ID")}</div>
+    <div><b>Total Tunggakan:</b><br>Rp ${x.totalTunggakan.toLocaleString("id-ID")}</div>
+  </div>
+
   <hr class="my-3 border-gray-700">
+
   <b>Riwayat Pembayaran:</b>
-  <ul class="list-disc ml-5">
-    ${d.data.bayar.map(b=>`<li>${b.Tanggal} - Rp ${b.Jumlah2025||b.Jumlah2026||0}</li>`).join("")}
+  <ul class="list-disc ml-5 mb-3">
+    ${x.pembayaran.map(b=>`
+      <li>${b.Tanggal} | ${b.Periode2025||b.Periode2026||""} 
+      — Rp ${(b.Jumlah2025||b.Jumlah2026||0).toLocaleString("id-ID")}</li>
+    `).join("") || "<i>Tidak ada</i>"}
   </ul>
+
   <hr class="my-3 border-gray-700">
-  <b>Tunggakan:</b>
-  <pre>${JSON.stringify(d.data.tunggakan,null,2)}</pre>
+
+  <b>Data Tunggakan:</b>
+  <pre class="text-xs bg-gray-950 p-3 rounded">
+${JSON.stringify(x.tunggakan,null,2)}
+  </pre>
   `;
 }
+
 
 function closeModal(){
   modal.classList.add("hidden");
