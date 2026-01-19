@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Manajemen Penghuni Rusun</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-gray-950 text-gray-200">
+
+<script>
+if(localStorage.getItem("rusun_login")!=="true"){
+  location.href="/login.html";
+}
+</script>
+
+<div class="flex min-h-screen">
+
+<!-- SIDEBAR -->
+<aside class="w-64 bg-gray-900 p-5 border-r border-gray-800">
+<h2 class="text-xl font-bold mb-6">🏠 RUSUN DASHBOARD</h2>
+<p class="text-sm text-gray-400">Manajemen Penghuni</p>
+<button onclick="logout()" class="mt-10 text-red-400 text-sm">Logout</button>
+</aside>
+
+<!-- MAIN -->
+<main class="flex-1 p-6">
+
+<h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+
+<!-- CARDS -->
+<div id="cards" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"></div>
+
+<!-- GRAFIK -->
+<div class="bg-gray-900 p-5 rounded-xl mb-8 border border-gray-800">
+<h3 class="font-bold mb-3">Grafik Pembayaran vs Tunggakan</h3>
+<canvas id="chart"></canvas>
+</div>
+
+<!-- TABLE -->
+<div class="bg-gray-900 p-5 rounded-xl border border-gray-800">
+<h3 class="font-bold mb-3">Daftar Penghuni</h3>
+<input id="search" placeholder="Cari unit / nama..."
+ class="w-full p-2 mb-3 rounded bg-gray-800 border border-gray-700">
+
+<div class="overflow-auto">
+<table class="w-full text-sm" id="table"></table>
+</div>
+</div>
+
+</main>
+</div>
+
+<!-- MODAL DETAIL -->
+<div id="modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center">
+<div class="bg-gray-900 w-full max-w-3xl p-6 rounded-xl border border-gray-700">
+<h2 class="text-xl font-bold mb-3" id="mdTitle"></h2>
+<div id="mdBody" class="text-sm"></div>
+<button onclick="closeModal()" class="mt-4 bg-red-600 px-4 py-2 rounded">Tutup</button>
+</div>
+</div>
+
+<script>
+let penghuni=[];
+
+function logout(){
+  localStorage.removeItem("rusun_login");
+  location.href="/login.html";
+}
+
+async function load(){
+  const s = await fetch('/api/data?action=summary').then(r=>r.json());
+
+  cards.innerHTML = `
+    ${card("Penghuni", s.data.totalPenghuni)}
+    ${card("Unit Terisi", s.data.unitTerisi)}
+    ${card("Total Bayar", rupiah(s.data.totalPembayaran))}
+    ${card("Total Tunggakan", rupiah(s.data.totalTunggakan))}
+  `;
+
+  drawChart(s.data.totalPembayaran, s.data.totalTunggakan);
+
+  const p = await fetch('/api/data?action=penghuni').then(r=>r.json());
+  penghuni = p.data;
+  render(penghuni);
+}
+
+function card(t,v){
+  return `<div class="bg-gradient-to-br from-gray-800 to-gray-900 p-4 rounded-xl border border-gray-700">
+  <div class="text-gray-400 text-sm">${t}</div>
+  <div class="text-2xl font-bold">${v}</div></div>`;
+}
+
+function render(data){
+  let h = `<tr class="text-left border-b border-gray-700">
+<th class="p-2">Unit</th><th>Nama</th><th>No Telp</th><th>Status</th></tr>`;
+
+  data.forEach(r=>{
+    h+=`<tr onclick="detail('${r.Unit}')" class="border-b border-gray-800 hover:bg-gray-800 cursor-pointer">
+    <td class="p-2">${r.Unit||""}</td>
+    <td>${r.Nama||""}</td>
+    <td>${r["No Telp"]||""}</td>
+    <td>${badge(r)}</td></tr>`;
+  });
+
+  table.innerHTML=h;
+}
+
+function badge(r){
+  return r.Nama ? `<span class="text-green-400">AKTIF</span>` :
+  `<span class="text-gray-500">KOSONG</span>`;
+}
+
+search.addEventListener("input",e=>{
+  const q=e.target.value.toLowerCase();
+  render(penghuni.filter(r=>
+    (r.Unit||"").toLowerCase().includes(q) ||
+    (r.Nama||"").toLowerCase().includes(q)
+  ));
+});
+
+async function detail(unit){
+  const d = await fetch('/api/data?action=detail&unit='+unit).then(r=>r.json());
+  const tung = d.data.tunggakan[0];
+  const status = tung && (Number(tung.y2024_uang)+Number(tung.y2025_uang)+Number(tung.y2026_uang))>0
+    ? "🔴 MENUNGGAK" : "🟢 LUNAS";
+
+  modal.classList.remove("hidden");
+  modal.classList.add("flex");
+
+  mdTitle.innerText = "Unit "+unit+" — "+status;
+
+  mdBody.innerHTML = `
+  <p><b>Nama:</b> ${d.data.penghuni[0]?.Nama||"-"}</p>
+  <p><b>No Telp:</b> ${d.data.penghuni[0]?.["No Telp"]||"-"}</p>
+  <hr class="my-3 border-gray-700">
+  <b>Riwayat Pembayaran:</b>
+  <ul class="list-disc ml-5">
+    ${d.data.bayar.map(b=>`<li>${b.Tanggal} - Rp ${b.Jumlah2025||b.Jumlah2026||0}</li>`).join("")}
+  </ul>
+  <hr class="my-3 border-gray-700">
+  <b>Tunggakan:</b>
+  <pre>${JSON.stringify(d.data.tunggakan,null,2)}</pre>
+  `;
+}
+
+function closeModal(){
+  modal.classList.add("hidden");
+}
+
+function drawChart(bayar, tung){
+  new Chart(document.getElementById("chart"),{
+    type:'doughnut',
+    data:{
+      labels:["Pembayaran","Tunggakan"],
+      datasets:[{data:[bayar,tung]}]
+    }
+  });
+}
+
+function rupiah(n){
+  return "Rp " + (n||0).toLocaleString("id-ID");
+}
+
+load();
+</script>
+
+</body>
+</html>
