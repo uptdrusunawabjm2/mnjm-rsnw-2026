@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   const { action, unit } = req.query;
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzvyRrCMXlD7qpUoCSOa2HezV0Lc2X-8bZB5-EBpJnByxFDqE9mZyvIs5sbJBGAGNS-OQ/exec";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbzjABRVgRaoMj3Y1gCU_DRJpnZIvkGwxRRxmPW6buV1POsQ87GQCLAeEBG5j9jJZux7iQ/exec";
 
   try {
     const url = `${GAS_URL}?action=${action||"summary"}${unit ? "&unit="+unit : ""}`;
@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     res.status(500).json({status:false, message:"API Error"});
   }
 }
+
 
 
 
