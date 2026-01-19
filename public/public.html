@@ -4,26 +4,24 @@
 <meta charset="UTF-8">
 <title>Dashboard Rusunawa</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body class="bg-gray-950 text-gray-100">
+<body class="bg-gray-950 text-gray-100 min-h-screen">
 
 <div class="max-w-7xl mx-auto p-6">
 
-<h1 class="text-3xl font-bold mb-6">🏢 Dashboard Rusunawa</h1>
+<h1 class="text-3xl font-bold mb-8 flex items-center gap-2">
+  Rusunawa Kota Banjarmasin
+</h1>
 
-<!-- CARDS -->
-<div id="cards" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10"></div>
+<!-- DASHBOARD UTAMA -->
+<div id="cards" class="grid grid-cols-1 md:grid-cols-5 gap-5 mb-10"></div>
 
-<!-- GRAFIK -->
-<div class="bg-gray-900 p-5 rounded-xl border border-gray-800 mb-10">
-<h3 class="font-bold mb-3">Jumlah Unit Terisi per Lantai</h3>
-<canvas id="chart"></canvas>
-</div>
+<!-- DASHBOARD PER RUSUN -->
+<h2 class="text-xl font-bold mb-4 mt-6">🏘️ Dashboard per Rusun</h2>
+<div id="perRusun" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
 
-<!-- STRUKTUR -->
-<div id="struktur" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+<p id="lastUpdate" class="text-gray-400 text-sm mt-8"></p>
 
 </div>
 
@@ -33,56 +31,86 @@ async function load(){
   const j = await r.json();
   const d = j.data;
 
+  const persenHunian = d.totalUnit > 0 
+    ? ((d.unitTerisi / d.totalUnit) * 100).toFixed(1) 
+    : 0;
+
+  // ===== CARD UTAMA =====
   cards.innerHTML = `
     ${card("Total Unit", d.totalUnit, "from-slate-700 to-slate-800")}
     ${card("Siap Huni", d.unitSiapHuni, "from-green-600 to-green-700")}
     ${card("Terisi", d.unitTerisi, "from-blue-600 to-blue-700")}
     ${card("Rusak", d.unitRusak, "from-red-600 to-red-700")}
+    ${card("Hunian", persenHunian + " %", "from-purple-600 to-purple-700")}
   `;
 
-  renderStruktur(d.struktur);
-  drawChart(d.struktur);
+  // ===== OLAH DATA PER RUSUN =====
+  const rusunData = {
+    "Ganda Maghfirah": { total:0, terisi:0, siap:0, rusak:0 },
+    "Teluk Kelayan": { total:0, terisi:0, siap:0, rusak:0 }
+  };
+
+  Object.keys(d.struktur).forEach(rusun=>{
+    Object.values(d.struktur[rusun]).forEach(jml=>{
+      rusunData[rusun].terisi += jml;
+    });
+  });
+
+  // hitung ulang total unit, siap, rusak per rusun
+  // (pakai request kedua agar akurat per rusun)
+  const all = await fetch('/api/data?action=raw').then(r=>r.json());
+
+  all.data.forEach(r=>{
+    const unit = String(r.Unit||"");
+    const kondisi = String(r["Kondisi Unit"]||"").toLowerCase();
+    const rusun = unit.startsWith("GM-") ? "Ganda Maghfirah" :
+                  unit.startsWith("TK-") ? "Teluk Kelayan" : null;
+
+    if(!rusun) return;
+
+    rusunData[rusun].total++;
+
+    if(kondisi==="terisi") rusunData[rusun].terisi++;
+    else if(kondisi==="siap huni") rusunData[rusun].siap++;
+    else if(kondisi==="rusak") rusunData[rusun].rusak++;
+  });
+
+  renderPerRusun(rusunData);
+
+  lastUpdate.innerText = "Update terakhir: " + new Date().toLocaleString("id-ID");
 }
 
-function card(t,v,grad){
-  return `<div class="bg-gradient-to-br ${grad} p-6 rounded-2xl shadow-lg">
-    <div class="text-sm opacity-80 mb-1">${t}</div>
-    <div class="text-4xl font-bold">${v}</div>
+function renderPerRusun(data){
+  let html = "";
+  Object.keys(data).forEach(r=>{
+    const x = data[r];
+    const persen = x.total ? ((x.terisi/x.total)*100).toFixed(1) : 0;
+
+    html += `
+    <div class="bg-gradient-to-br from-gray-900 to-gray-800 p-6 rounded-2xl shadow-xl border border-gray-800">
+      <h3 class="text-lg font-bold mb-4">${r}</h3>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div>Total Unit</div><div class="text-right font-bold">${x.total}</div>
+        <div>Terisi</div><div class="text-right text-blue-400 font-bold">${x.terisi}</div>
+        <div>Siap Huni</div><div class="text-right text-green-400 font-bold">${x.siap}</div>
+        <div>Rusak</div><div class="text-right text-red-400 font-bold">${x.rusak}</div>
+        <div>Hunian</div><div class="text-right text-purple-400 font-bold">${persen} %</div>
+      </div>
+    </div>`;
+  });
+  perRusun.innerHTML = html;
+}
+
+function card(title, value, gradient){
+  return `
+  <div class="bg-gradient-to-br ${gradient} p-7 rounded-2xl shadow-xl">
+    <div class="text-sm opacity-80 mb-1">${title}</div>
+    <div class="text-4xl font-bold tracking-wide">${value}</div>
   </div>`;
 }
 
-function renderStruktur(data){
-  let html = "";
-  Object.keys(data).forEach(rusun=>{
-    html += `<div class="bg-gray-900 p-4 rounded-xl border border-gray-800">
-      <h3 class="font-bold mb-3">${rusun}</h3>`;
-    Object.keys(data[rusun]).forEach(l=>{
-      html += `<div class="flex justify-between text-sm border-b border-gray-800 py-1">
-        <span>Lantai ${l}</span>
-        <span>${data[rusun][l]} unit terisi</span>
-      </div>`;
-    });
-    html += `</div>`;
-  });
-  struktur.innerHTML = html;
-}
-
-function drawChart(data){
-  let labels=[], values=[];
-  Object.keys(data).forEach(r=>{
-    Object.keys(data[r]).forEach(l=>{
-      labels.push(r+" Lantai "+l);
-      values.push(data[r][l]);
-    });
-  });
-
-  new Chart(chart,{
-    type:'bar',
-    data:{labels, datasets:[{data:values}]}
-  });
-}
-
 load();
+setInterval(load, 60000);
 </script>
 
 </body>
