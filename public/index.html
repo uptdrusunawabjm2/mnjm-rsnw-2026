@@ -35,23 +35,28 @@ fetch("/api/data?action=internal&key=rusun2026")
 
   tp.innerText = d.totalPenghuni;
   ut.innerText = d.unitTerisi;
-  tb.innerText = "Rp " + d.totalPembayaran.toLocaleString("id-ID");
-  tt.innerText = "Rp " + d.totalTunggakan.toLocaleString("id-ID");
+  tb.innerText = "Rp " + Number(d.totalPembayaran||0).toLocaleString("id-ID");
+  tt.innerText = "Rp " + Number(d.totalTunggakan||0).toLocaleString("id-ID");
 
   let html="";
   d.listPenghuni.forEach(p=>{
+    const ph = p.penghuni || {};
+
     html+=`<tr class="border-b border-slate-800">
-      <td>${p.unit.toUpperCase()}</td>
-      <td>${p.nama}</td>
-      <td>${p.notelp}</td>
-      <td>${p.status}</td>
-      <td>Rp ${p.pembayaran.toLocaleString("id-ID")}</td>
-      <td>Rp ${p.tunggakan.toLocaleString("id-ID")}</td>
+      <td>${(p.unit||"").toUpperCase()}</td>
+      <td>${ph.nama || ""}</td>
+      <td>${ph.notelp || ""}</td>
+      <td>${ph.kondisiunit || ""}</td>
+      <td>Rp ${Number(p.pembayaran||0).toLocaleString("id-ID")}</td>
+      <td>Rp ${Number(p.tunggakan||0).toLocaleString("id-ID")}</td>
     </tr>`;
   });
+
   tbody.innerHTML = html;
 });
 </script>
+
 </body>
 </html>
+
 
