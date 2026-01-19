@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Manajemen Penghuni Rusun</title>
+<title>Dashboard Internal Rusun</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -18,9 +18,9 @@ if(localStorage.getItem("rusun_login")!=="true"){
 
 <!-- SIDEBAR -->
 <aside class="w-64 bg-gray-900 p-5 border-r border-gray-800">
-<h2 class="text-xl font-bold mb-6">🏠 RUSUN DASHBOARD</h2>
-<p class="text-sm text-gray-400">Manajemen Penghuni</p>
-<button onclick="logout()" class="mt-10 text-red-400 text-sm">Logout</button>
+  <h2 class="text-xl font-bold mb-6">🏠 RUSUN DASHBOARD</h2>
+  <p class="text-sm text-gray-400 mb-6">Manajemen Penghuni</p>
+  <button onclick="logout()" class="text-red-400 text-sm">Logout</button>
 </aside>
 
 <!-- MAIN -->
@@ -33,13 +33,14 @@ if(localStorage.getItem("rusun_login")!=="true"){
 
 <!-- TABLE -->
 <div class="bg-gray-900 p-5 rounded-xl border border-gray-800">
-<h3 class="font-bold mb-3">Daftar Penghuni</h3>
-<input id="search" placeholder="Cari unit / nama..."
- class="w-full p-2 mb-3 rounded bg-gray-800 border border-gray-700">
+  <h3 class="font-bold mb-3">Daftar Penghuni</h3>
 
-<div class="overflow-auto">
-<table class="w-full text-sm" id="table"></table>
-</div>
+  <input id="search" placeholder="Cari unit / nama / no telp..."
+   class="w-full p-2 mb-3 rounded bg-gray-800 border border-gray-700 outline-none">
+
+  <div class="overflow-auto">
+    <table class="w-full text-sm" id="table"></table>
+  </div>
 </div>
 
 </main>
@@ -47,11 +48,11 @@ if(localStorage.getItem("rusun_login")!=="true"){
 
 <!-- MODAL -->
 <div id="modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center">
-<div class="bg-gray-900 w-full max-w-3xl p-6 rounded-xl border border-gray-700">
-<h2 class="text-xl font-bold mb-3" id="mdTitle"></h2>
-<div id="mdBody" class="text-sm"></div>
-<button onclick="closeModal()" class="mt-4 bg-red-600 px-4 py-2 rounded">Tutup</button>
-</div>
+  <div class="bg-gray-900 w-full max-w-3xl p-6 rounded-xl border border-gray-700">
+    <h2 class="text-xl font-bold mb-3" id="mdTitle"></h2>
+    <div id="mdBody" class="text-sm"></div>
+    <button onclick="closeModal()" class="mt-4 bg-red-600 px-4 py-2 rounded">Tutup</button>
+  </div>
 </div>
 
 <script>
@@ -87,15 +88,24 @@ function card(t,v){
 
 function render(data){
   let h = `<tr class="text-left border-b border-gray-700">
-<th class="p-2">Unit</th><th>Nama</th><th>Status</th><th>Total Bayar</th><th>Total Tunggakan</th></tr>`;
+    <th class="p-2">Unit</th>
+    <th>Nama</th>
+    <th>No Telp</th>
+    <th>Status</th>
+    <th>Total Bayar</th>
+    <th>Total Tunggakan</th>
+  </tr>`;
 
   data.forEach(r=>{
-    h+=`<tr onclick="detail('${r.unit}')" class="border-b border-gray-800 hover:bg-gray-800 cursor-pointer">
-    <td class="p-2">${r.unit}</td>
-    <td>${r.penghuni.Nama||""}</td>
-    <td>${r.penghuni["Kondisi Unit"]||""}</td>
-    <td>${rupiah(r.totalBayar)}</td>
-    <td>${rupiah(r.totalTunggakan)}</td></tr>`;
+    h+=`<tr onclick="detail('${r.unit}')" 
+      class="border-b border-gray-800 hover:bg-gray-800 cursor-pointer">
+      <td class="p-2">${r.unit}</td>
+      <td>${r.penghuni.Nama||""}</td>
+      <td>${r.penghuni["No Telp"]||""}</td>
+      <td>${r.penghuni["Kondisi Unit"]||""}</td>
+      <td>${rupiah(r.pembayaran)}</td>
+      <td>${rupiah(r.tunggakan)}</td>
+    </tr>`;
   });
 
   table.innerHTML=h;
@@ -105,7 +115,8 @@ search.addEventListener("input",e=>{
   const q=e.target.value.toLowerCase();
   render(penghuni.filter(r=>
     r.unit.toLowerCase().includes(q) ||
-    (r.penghuni.Nama||"").toLowerCase().includes(q)
+    (r.penghuni.Nama||"").toLowerCase().includes(q) ||
+    String(r.penghuni["No Telp"]||"").toLowerCase().includes(q)
   ));
 });
 
@@ -116,28 +127,29 @@ function detail(unit){
   modal.classList.remove("hidden");
   modal.classList.add("flex");
 
-  mdTitle.innerText = "Unit "+x.unit;
+  mdTitle.innerText = "Unit " + x.unit;
 
   mdBody.innerHTML = `
   <div class="grid grid-cols-2 gap-4 mb-3">
     <div><b>Nama:</b><br>${x.penghuni.Nama||"-"}</div>
     <div><b>No Telp:</b><br>${x.penghuni["No Telp"]||"-"}</div>
-    <div><b>Total Bayar:</b><br>${rupiah(x.totalBayar)}</div>
-    <div><b>Total Tunggakan:</b><br>${rupiah(x.totalTunggakan)}</div>
+    <div><b>Status:</b><br>${x.penghuni["Kondisi Unit"]||"-"}</div>
+    <div><b>Total Bayar:</b><br>${rupiah(x.pembayaran)}</div>
+    <div><b>Total Tunggakan:</b><br>${rupiah(x.tunggakan)}</div>
   </div>
 
   <hr class="my-3 border-gray-700">
 
   <b>Riwayat Pembayaran:</b>
   <pre class="text-xs bg-gray-950 p-3 rounded overflow-auto">
-${JSON.stringify(x.pembayaran,null,2)}
+${JSON.stringify(x.bayarList,null,2)}
   </pre>
 
   <hr class="my-3 border-gray-700">
 
   <b>Data Tunggakan:</b>
   <pre class="text-xs bg-gray-950 p-3 rounded overflow-auto">
-${JSON.stringify(x.tunggakan,null,2)}
+${JSON.stringify(x.tunggakanData,null,2)}
   </pre>
   `;
 }
