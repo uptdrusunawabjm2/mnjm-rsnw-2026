@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <title>Manajemen Penghuni Rusun</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="bg-gray-950 text-gray-200">
@@ -27,16 +26,10 @@ if(localStorage.getItem("rusun_login")!=="true"){
 <!-- MAIN -->
 <main class="flex-1 p-6">
 
-<h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+<h1 class="text-2xl font-bold mb-6">Dashboard Internal</h1>
 
 <!-- CARDS -->
 <div id="cards" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"></div>
-
-<!-- GRAFIK -->
-<div class="bg-gray-900 p-5 rounded-xl mb-8 border border-gray-800">
-<h3 class="font-bold mb-3">Grafik Pembayaran vs Tunggakan</h3>
-<canvas id="chart"></canvas>
-</div>
 
 <!-- TABLE -->
 <div class="bg-gray-900 p-5 rounded-xl border border-gray-800">
@@ -52,7 +45,7 @@ if(localStorage.getItem("rusun_login")!=="true"){
 </main>
 </div>
 
-<!-- MODAL DETAIL -->
+<!-- MODAL -->
 <div id="modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center">
 <div class="bg-gray-900 w-full max-w-3xl p-6 rounded-xl border border-gray-700">
 <h2 class="text-xl font-bold mb-3" id="mdTitle"></h2>
@@ -62,6 +55,7 @@ if(localStorage.getItem("rusun_login")!=="true"){
 </div>
 
 <script>
+const API_KEY = "rusun2026"; // samakan dengan Code.gs
 let penghuni=[];
 
 function logout(){
@@ -70,19 +64,18 @@ function logout(){
 }
 
 async function load(){
-  const s = await fetch('/api/data?action=summary').then(r=>r.json());
+  const r = await fetch(`/api/data?action=internal&key=${API_KEY}`);
+  const j = await r.json();
+  const d = j.data;
 
   cards.innerHTML = `
-    ${card("Penghuni", s.data.totalPenghuni)}
-    ${card("Unit Terisi", s.data.unitTerisi)}
-    ${card("Total Bayar", rupiah(s.data.totalPembayaran))}
-    ${card("Total Tunggakan", rupiah(s.data.totalTunggakan))}
+    ${card("Penghuni", d.totalPenghuni)}
+    ${card("Unit Terisi", d.unitTerisi)}
+    ${card("Total Bayar", rupiah(d.totalPembayaran))}
+    ${card("Total Tunggakan", rupiah(d.totalTunggakan))}
   `;
 
-  drawChart(s.data.totalPembayaran, s.data.totalTunggakan);
-
-  const p = await fetch('/api/data?action=penghuni').then(r=>r.json());
-  penghuni = p.data;
+  penghuni = d.listPenghuni;
   render(penghuni);
 }
 
@@ -94,86 +87,64 @@ function card(t,v){
 
 function render(data){
   let h = `<tr class="text-left border-b border-gray-700">
-<th class="p-2">Unit</th><th>Nama</th><th>No Telp</th><th>Status</th></tr>`;
+<th class="p-2">Unit</th><th>Nama</th><th>Status</th><th>Total Bayar</th><th>Total Tunggakan</th></tr>`;
 
   data.forEach(r=>{
-    h+=`<tr onclick="detail('${r.Unit}')" class="border-b border-gray-800 hover:bg-gray-800 cursor-pointer">
-    <td class="p-2">${r.Unit||""}</td>
-    <td>${r.Nama||""}</td>
-    <td>${r["No Telp"]||""}</td>
-    <td>${badge(r)}</td></tr>`;
+    h+=`<tr onclick="detail('${r.unit}')" class="border-b border-gray-800 hover:bg-gray-800 cursor-pointer">
+    <td class="p-2">${r.unit}</td>
+    <td>${r.penghuni.Nama||""}</td>
+    <td>${r.penghuni["Kondisi Unit"]||""}</td>
+    <td>${rupiah(r.totalBayar)}</td>
+    <td>${rupiah(r.totalTunggakan)}</td></tr>`;
   });
 
   table.innerHTML=h;
 }
 
-function badge(r){
-  return r.Nama ? `<span class="text-green-400">AKTIF</span>` :
-  `<span class="text-gray-500">KOSONG</span>`;
-}
-
 search.addEventListener("input",e=>{
   const q=e.target.value.toLowerCase();
   render(penghuni.filter(r=>
-    (r.Unit||"").toLowerCase().includes(q) ||
-    (r.Nama||"").toLowerCase().includes(q)
+    r.unit.toLowerCase().includes(q) ||
+    (r.penghuni.Nama||"").toLowerCase().includes(q)
   ));
 });
 
-async function detail(unit){
-  const d = await fetch('/api/data?action=detail&unit='+encodeURIComponent(unit)).then(r=>r.json());
-  const x = d.data;
+function detail(unit){
+  const x = penghuni.find(p=>p.unit===unit);
+  if(!x) return;
 
   modal.classList.remove("hidden");
   modal.classList.add("flex");
 
-  mdTitle.innerText = "Unit "+x.unit+" — " + (x.status==="LUNAS" ? "🟢 LUNAS" : "🔴 MENUNGGAK");
+  mdTitle.innerText = "Unit "+x.unit;
 
   mdBody.innerHTML = `
   <div class="grid grid-cols-2 gap-4 mb-3">
-    <div><b>Nama:</b><br>${x.penghuni?.Nama||"-"}</div>
-    <div><b>No Telp:</b><br>${x.penghuni?.["No Telp"]||"-"}</div>
-    <div><b>Total Bayar:</b><br>Rp ${x.totalBayar.toLocaleString("id-ID")}</div>
-    <div><b>Total Tunggakan:</b><br>Rp ${x.totalTunggakan.toLocaleString("id-ID")}</div>
+    <div><b>Nama:</b><br>${x.penghuni.Nama||"-"}</div>
+    <div><b>No Telp:</b><br>${x.penghuni["No Telp"]||"-"}</div>
+    <div><b>Total Bayar:</b><br>${rupiah(x.totalBayar)}</div>
+    <div><b>Total Tunggakan:</b><br>${rupiah(x.totalTunggakan)}</div>
   </div>
 
   <hr class="my-3 border-gray-700">
 
   <b>Riwayat Pembayaran:</b>
-  <ul class="list-disc ml-5 mb-3">
-    ${x.pembayaran.map(b=>`
-      <li>${b.Tanggal} | ${b.Periode2025||b.Periode2026||""} 
-      — Rp ${(b.Jumlah2025||b.Jumlah2026||0).toLocaleString("id-ID")}</li>
-    `).join("") || "<i>Tidak ada</i>"}
-  </ul>
+  <pre class="text-xs bg-gray-950 p-3 rounded overflow-auto">
+${JSON.stringify(x.pembayaran,null,2)}
+  </pre>
 
   <hr class="my-3 border-gray-700">
 
   <b>Data Tunggakan:</b>
-  <pre class="text-xs bg-gray-950 p-3 rounded">
+  <pre class="text-xs bg-gray-950 p-3 rounded overflow-auto">
 ${JSON.stringify(x.tunggakan,null,2)}
   </pre>
   `;
 }
 
+function closeModal(){ modal.classList.add("hidden"); }
 
-function closeModal(){
-  modal.classList.add("hidden");
-}
-
-function drawChart(bayar, tung){
-  new Chart(document.getElementById("chart"),{
-    type:'doughnut',
-    data:{
-      labels:["Pembayaran","Tunggakan"],
-      datasets:[{data:[bayar,tung]}]
-    }
-  });
-}
-
-function rupiah(n){
-  return "Rp " + (n||0).toLocaleString("id-ID");
-}
+function rupiah(n){ return "Rp " + (n||0).toLocaleString("id-ID"); }
 
 load();
 </script>
