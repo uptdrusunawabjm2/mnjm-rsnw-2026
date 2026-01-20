@@ -1,112 +1,101 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <title>Dashboard Internal Rusun</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body class="bg-slate-950 text-white">
 
-<div class="flex min-h-screen">
+<div class="flex">
 
-  <div class="w-64 bg-slate-900 p-4">
-    <h1 class="text-xl font-bold mb-6">🏠 RUSUN DASHBOARD</h1>
-    <div class="text-slate-400 mb-4">Manajemen Penghuni</div>
-    <button onclick="logout()" class="text-red-500">Logout</button>
+<!-- SIDEBAR -->
+<div class="w-64 bg-slate-900 min-h-screen p-5">
+  <h1 class="text-xl font-bold mb-6">🏠 RUSUN DASHBOARD</h1>
+  <div class="text-slate-300 mb-2">Manajemen Penghuni</div>
+  <a href="/login.html" class="text-red-400 mt-10 inline-block">Logout</a>
+</div>
+
+<!-- MAIN -->
+<div class="flex-1 p-8">
+  <h2 class="text-2xl font-bold mb-6">Dashboard Internal</h2>
+
+  <!-- CARD -->
+  <div class="grid grid-cols-4 gap-4 mb-8">
+    <div class="bg-slate-800 p-4 rounded">Penghuni<br><b id="penghuni">-</b></div>
+    <div class="bg-slate-800 p-4 rounded">Unit Terisi<br><b id="unitTerisi">-</b></div>
+    <div class="bg-slate-800 p-4 rounded">Total Bayar<br><b id="totalBayar">Rp 0</b></div>
+    <div class="bg-slate-800 p-4 rounded">Total Tunggakan<br><b id="totalTunggakan">Rp 0</b></div>
   </div>
 
-  <div class="flex-1 p-8">
-    <h2 class="text-2xl font-bold mb-6">Dashboard Internal</h2>
+  <!-- TABLE -->
+  <div class="bg-slate-900 rounded p-5">
+    <h3 class="font-bold mb-4">Daftar Penghuni</h3>
+    <input id="search" placeholder="Cari unit / nama..." class="w-full p-2 mb-4 bg-slate-800 rounded">
 
-    <div class="grid grid-cols-4 gap-4 mb-8">
-      <div class="bg-slate-800 p-4 rounded">Penghuni<br><b id="penghuni">-</b></div>
-      <div class="bg-slate-800 p-4 rounded">Unit Terisi<br><b id="unitTerisi">-</b></div>
-      <div class="bg-slate-800 p-4 rounded">Total Bayar<br><b id="totalBayar">Rp 0</b></div>
-      <div class="bg-slate-800 p-4 rounded">Total Tunggakan<br><b id="totalTunggakan">Rp 0</b></div>
-    </div>
-
-    <div class="bg-slate-900 p-6 rounded">
-      <h3 class="text-lg font-bold mb-4">Daftar Penghuni</h3>
-      <input id="search" oninput="filter()" class="w-full p-2 rounded bg-slate-800 mb-4" placeholder="Cari unit / nama...">
-
-      <div class="overflow-auto max-h-[500px]">
-        <table class="w-full text-sm">
-          <thead class="text-slate-400">
-            <tr>
-              <th class="p-2 text-left">Unit</th>
-              <th class="p-2 text-left">Nama</th>
-              <th class="p-2 text-left">No Telp</th>
-              <th class="p-2 text-left">Kondisi</th>
-              <th class="p-2 text-right">Bayar</th>
-              <th class="p-2 text-right">Tunggakan</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-    </div>
+    <table class="w-full text-sm">
+      <thead class="border-b border-slate-700">
+        <tr>
+          <th class="py-2 text-left">Unit</th>
+          <th class="py-2 text-left">Nama</th>
+          <th class="py-2 text-left">Status</th>
+          <th class="py-2 text-left">Total Bayar</th>
+          <th class="py-2 text-left">Total Tunggakan</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
   </div>
+</div>
 </div>
 
 <script>
-if(localStorage.getItem("login")!=="ok"){
-  location.href="/login.html";
-}
-
 const penghuni = document.getElementById("penghuni");
 const unitTerisi = document.getElementById("unitTerisi");
 const totalBayar = document.getElementById("totalBayar");
 const totalTunggakan = document.getElementById("totalTunggakan");
 const tbody = document.getElementById("tbody");
+const search = document.getElementById("search");
 
-let cache = [];
+async function loadData(){
+  const res = await fetch("/api/data?action=internal&key=rusun2026");
+  const json = await res.json();
 
-fetch("/api/data?action=internal&key=rusun2026")
-.then(r=>r.json())
-.then(res=>{
-  if(!res.status) return alert(res.message);
-
-  const sum = res.data.summary;
-  const data = res.data.data;
+  const sum = json.data.summary;
+  const data = json.data.data;
 
   penghuni.innerText = sum.penghuni;
   unitTerisi.innerText = sum.terisi;
   totalBayar.innerText = "Rp " + sum.totalBayar.toLocaleString("id-ID");
   totalTunggakan.innerText = "Rp " + sum.totalTunggakan.toLocaleString("id-ID");
 
-  cache = data;
   render(data);
-});
+}
 
 function render(data){
   tbody.innerHTML = "";
-  data.forEach(r=>{
-    tbody.innerHTML += `
-      <tr class="border-b border-slate-800">
-        <td class="p-2">${r.unit}</td>
-        <td class="p-2">${r.nama}</td>
-        <td class="p-2">${r.notelp}</td>
-        <td class="p-2">${r.kondisiunit}</td>
-        <td class="p-2 text-right">Rp ${Number(r.pembayaran).toLocaleString("id-ID")}</td>
-        <td class="p-2 text-right">Rp ${Number(r.tunggakan).toLocaleString("id-ID")}</td>
-      </tr>`;
+  data.forEach(d=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="py-1">${d.unit}</td>
+      <td>${d.nama}</td>
+      <td>${d.kondisiunit}</td>
+      <td>Rp ${Number(d.pembayaran).toLocaleString("id-ID")}</td>
+      <td>Rp ${Number(d.tunggakan).toLocaleString("id-ID")}</td>
+    `;
+    tbody.appendChild(tr);
   });
 }
 
-function filter(){
-  const q = search.value.toLowerCase();
-  render(cache.filter(x =>
-    x.unit.toLowerCase().includes(q) ||
-    x.nama.toLowerCase().includes(q)
-  ));
-}
+search.addEventListener("input",()=>{
+  const v = search.value.toLowerCase();
+  document.querySelectorAll("#tbody tr").forEach(tr=>{
+    tr.style.display = tr.innerText.toLowerCase().includes(v) ? "" : "none";
+  });
+});
 
-function logout(){
-  localStorage.removeItem("login");
-  location.href="/login.html";
-}
+loadData();
 </script>
-
 </body>
 </html>
