@@ -67,20 +67,29 @@ async function loadData(){
 
   penghuni.innerText = sum.penghuni;
   unitTerisi.innerText = sum.terisi;
-  totalBayar.innerText = "Rp " + sum.totalBayar.toLocaleString("id-ID");
-  totalTunggakan.innerText = "Rp " + sum.totalTunggakan.toLocaleString("id-ID");
+  totalBayar.innerText = "Rp " + Number(sum.totalBayar).toLocaleString("id-ID");
+  totalTunggakan.innerText = "Rp " + Number(sum.totalTunggakan).toLocaleString("id-ID");
 
   render(data);
+}
+
+function warnaStatus(status){
+  status = status.toLowerCase();
+  if(status.includes("terisi")) return "text-green-400 font-semibold";
+  if(status.includes("rusak")) return "text-red-400 font-semibold";
+  if(status.includes("siap")) return "text-yellow-400 font-semibold";
+  return "text-slate-300";
 }
 
 function render(data){
   tbody.innerHTML = "";
   data.forEach(d=>{
     const tr = document.createElement("tr");
+
     tr.innerHTML = `
-      <td class="py-1">${d.unit}</td>
+      <td class="py-1 uppercase">${d.unit}</td>
       <td>${d.nama}</td>
-      <td>${d.kondisiunit}</td>
+      <td class="${warnaStatus(d.kondisiunit)}">${d.kondisiunit}</td>
       <td>Rp ${Number(d.pembayaran).toLocaleString("id-ID")}</td>
       <td>Rp ${Number(d.tunggakan).toLocaleString("id-ID")}</td>
     `;
