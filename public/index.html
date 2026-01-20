@@ -70,7 +70,7 @@ const search = document.getElementById("search");
 let ALL = [];
 
 // PAKAI PROXY VERCEL
-fetch("/api/data?action=internal&key=rusun2026")
+fetch("https://script.google.com/macros/s/AKfycbzjABRVgRaoMj3Y1gCU_DRJpnZIvkGwxRRxmPW6buV1POsQ87GQCLAeEBG5j9jJZux7iQ/exec?action=internal&key=rusun2026")
  .then(r => r.json())
  .then(res => {
     console.log("API INTERNAL:", res);
@@ -123,3 +123,4 @@ search.addEventListener("input", ()=>{
 
 </body>
 </html>
+
