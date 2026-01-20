@@ -69,19 +69,20 @@ const search = document.getElementById("search");
 
 let ALL = [];
 
-fetch("/api/data?action=internal&key=rusun2026")
-.then(r=>r.json())
-.then(j=>{
-  const d = j.data;
+fetch(https://script.google.com/macros/s/AKfycbzjABRVgRaoMj3Y1gCU_DRJpnZIvkGwxRRxmPW6buV1POsQ87GQCLAeEBG5j9jJZux7iQ/exec?action=internal&key=rusun2026)
+ .then(r=>r.json())
+ .then(res=>{
+    const sum = res.data.summary;
+    const data = res.data.data;
 
-  tp.innerText = d.totalPenghuni || 0;
-  ut.innerText = d.unitTerisi || 0;
-  tb.innerText = "Rp " + Number(d.totalPembayaran||0).toLocaleString("id-ID");
-  tt.innerText = "Rp " + Number(d.totalTunggakan||0).toLocaleString("id-ID");
+    penghuni.innerText = sum.penghuni;
+    unitTerisi.innerText = sum.terisi;
+    totalBayar.innerText = "Rp " + sum.totalBayar.toLocaleString("id-ID");
+    totalTunggakan.innerText = "Rp " + sum.totalTunggakan.toLocaleString("id-ID");
 
-  ALL = d.listPenghuni || [];
-  render(ALL);
-});
+    render(data);
+ });
+
 
 function render(data){
   let html = "";
@@ -113,4 +114,5 @@ search.addEventListener("input", ()=>{
 </script>
 
 </body>
+
 </html>
