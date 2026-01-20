@@ -1,9 +1,0 @@
-{
-  "cleanUrls": true,
-  "trailingSlash": false,
-  "routes": [
-    { "src": "^/$", "dest": "/public/public.html" },
-    { "src": "^/api/(.*)", "dest": "/api/$1" },
-    { "src": "^/(.*)", "dest": "/public/$1" }
-  ]
-}
