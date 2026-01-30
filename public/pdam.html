@@ -62,14 +62,24 @@
   </div>
 </div>
 
-<!-- MODAL FOTO -->
-<div id="fotoModal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
-  <div class="bg-slate-900 rounded-xl p-4 max-w-3xl w-full">
-    <div class="flex justify-between mb-2">
-      <span class="font-semibold text-blue-400">Foto Angka Meter</span>
-      <button onclick="closeFoto()" class="text-red-400 font-bold">✖</button>
+<!-- ================= MODAL FOTO (FIXED & CENTER) ================= -->
+<div id="fotoModal"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm">
+  
+  <div class="relative bg-slate-900 rounded-2xl p-4 max-w-4xl w-[95%] shadow-2xl">
+    <button onclick="closeFoto()"
+      class="absolute top-3 right-3 text-slate-400 hover:text-red-400 text-xl font-bold">
+      ✕
+    </button>
+
+    <h3 class="text-sm font-semibold text-blue-400 mb-3">
+      Foto Angka Meter
+    </h3>
+
+    <div class="flex justify-center">
+      <img id="fotoImg"
+        class="max-h-[75vh] rounded-xl border border-slate-700 shadow-lg">
     </div>
-    <img id="fotoImg" class="max-h-[75vh] mx-auto rounded-xl">
   </div>
 </div>
 
@@ -104,17 +114,14 @@ function applyFilter(){
   const bulan = filterBulan.value;
 
   filteredData = allData.filter(d=>{
-    let ok = true;
-
-    if(rusun && d.rusunawa !== rusun) ok = false;
-    if(kamar && !String(d.no_kamar).toLowerCase().includes(kamar)) ok = false;
-
+    if(rusun && d.rusunawa !== rusun) return false;
+    if(kamar && !String(d.no_kamar).toLowerCase().includes(kamar)) return false;
     if(bulan){
       const dt = new Date(d.tanggal);
       const ym = dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0");
-      if(ym !== bulan) ok = false;
+      if(ym !== bulan) return false;
     }
-    return ok;
+    return true;
   });
 
   page = 1;
@@ -147,26 +154,45 @@ function render(){
         ${d.selisih_meter}
       </td>
       <td class="px-3 py-2 text-center">
-        ${d.foto ? `<button onclick="openFoto('${d.foto}')" class="text-blue-400 underline">lihat</button>`:"-"}
+        ${d.foto
+          ? `<button onclick="openFoto('${d.foto}')" class="text-blue-400 underline">lihat</button>`
+          : "-"}
       </td>
     </tr>`;
   });
 
-  info.innerText = `Menampilkan ${start+1}-${Math.min(start+limit, filteredData.length)} dari ${filteredData.length}`;
+  info.innerText =
+    `Menampilkan ${start+1}-${Math.min(start+limit, filteredData.length)} dari ${filteredData.length}`;
 }
 
 function nextPage(){ if(page*limit < filteredData.length){ page++; render(); } }
 function prevPage(){ if(page>1){ page--; render(); } }
 
-function openFoto(u){
-  fotoImg.src = u;
+function openFoto(url){
+  fotoImg.src = url;
   fotoModal.classList.remove("hidden");
   fotoModal.classList.add("flex");
+  document.body.style.overflow = "hidden";
 }
+
 function closeFoto(){
   fotoModal.classList.add("hidden");
+  fotoModal.classList.remove("flex");
   fotoImg.src = "";
+  document.body.style.overflow = "";
 }
+
+// tutup modal dengan klik backdrop
+fotoModal.addEventListener("click",e=>{
+  if(e.target === fotoModal) closeFoto();
+});
+
+// tutup modal dengan ESC
+document.addEventListener("keydown",e=>{
+  if(e.key === "Escape" && !fotoModal.classList.contains("hidden")){
+    closeFoto();
+  }
+});
 
 loadPDAM();
 </script>
