@@ -4,33 +4,34 @@
 <meta charset="UTF-8">
 <title>PDAM - Data Meter</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body class="bg-slate-950 text-slate-200 p-6">
+<body class="bg-slate-950 text-slate-200 p-4 md:p-6">
 
-<h1 class="text-xl font-semibold mb-5 flex items-center gap-2 text-slate-100">
+<h1 class="text-lg md:text-xl font-semibold mb-4 flex items-center gap-2 text-slate-100">
   📊 <span>Data Meter PDAM</span>
 </h1>
 
 <!-- FILTER -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-5">
-  <select id="filterRusun" class="bg-slate-900 border border-slate-800 p-2 rounded-lg text-sm text-slate-300">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+  <select id="filterRusun" class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-sm">
     <option value="">Semua Rusunawa</option>
   </select>
 
   <input id="filterKamar" placeholder="Cari No Kamar (ex: C3.01)"
-    class="bg-slate-900 border border-slate-800 p-2 rounded-lg text-sm text-slate-300">
+    class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-sm">
 
   <input type="month" id="filterBulan"
-    class="bg-slate-900 border border-slate-800 p-2 rounded-lg text-sm text-slate-300">
+    class="bg-slate-900 border border-slate-800 p-2.5 rounded-lg text-sm">
 
   <div class="flex gap-2">
     <button onclick="applyFilter()"
-      class="flex-1 bg-blue-600/80 hover:bg-blue-600 px-4 py-2 rounded-lg text-sm font-medium">
+      class="flex-1 bg-blue-600/80 hover:bg-blue-600 px-4 py-2.5 rounded-lg text-sm font-medium">
       Terapkan
     </button>
     <button onclick="resetFilter()"
-      class="flex-1 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-sm">
+      class="flex-1 bg-slate-800 hover:bg-slate-700 px-4 py-2.5 rounded-lg text-sm">
       Reset
     </button>
   </div>
@@ -38,15 +39,15 @@
 
 <!-- TABLE -->
 <div class="overflow-auto bg-slate-900 border border-slate-800 rounded-xl">
-<table class="w-full text-sm">
-<thead class="sticky top-0 bg-slate-900/95 backdrop-blur text-slate-400">
-<tr class="border-b border-slate-800">
-  <th class="py-3 px-3 font-medium text-left">Rusunawa</th>
-  <th class="py-3 px-3 font-medium text-left">No Kamar</th>
-  <th class="py-3 px-3 font-medium text-left">Tanggal</th>
-  <th class="py-3 px-3 font-medium text-right">Angka</th>
-  <th class="py-3 px-3 font-medium text-right">Selisih</th>
-  <th class="py-3 px-3 font-medium text-center">Foto</th>
+<table class="w-full text-sm md:text-[13px]">
+<thead class="sticky top-0 z-10 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+<tr class="text-slate-400">
+  <th class="px-3 py-3 text-left font-medium">Rusunawa</th>
+  <th class="px-3 py-3 text-left font-medium">No Kamar</th>
+  <th class="px-3 py-3 text-left font-medium">Tanggal</th>
+  <th class="px-3 py-3 text-right font-medium">Angka</th>
+  <th class="px-3 py-3 text-right font-medium">Selisih</th>
+  <th class="px-3 py-3 text-center font-medium">Foto</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
@@ -54,11 +55,11 @@
 </div>
 
 <!-- PAGINATION -->
-<div class="flex justify-between items-center mt-4 text-xs text-slate-400">
+<div class="flex justify-between items-center mt-3 text-xs text-slate-400">
   <div id="info"></div>
   <div class="flex gap-2">
-    <button onclick="prevPage()" class="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700">Prev</button>
-    <button onclick="nextPage()" class="px-3 py-1 bg-slate-800 rounded hover:bg-slate-700">Next</button>
+    <button onclick="prevPage()" class="px-3 py-1.5 bg-slate-800 rounded hover:bg-slate-700">Prev</button>
+    <button onclick="nextPage()" class="px-3 py-1.5 bg-slate-800 rounded hover:bg-slate-700">Next</button>
   </div>
 </div>
 
@@ -67,6 +68,7 @@ let allData = [];
 let filteredData = [];
 let page = 1;
 const limit = 50;
+const EXTREME_LIMIT = 25; // ambang selisih ekstrem
 
 function driveToView(url){
   if(!url) return "";
@@ -133,18 +135,32 @@ function render(){
     const zebra = i%2 ? "bg-slate-900" : "bg-slate-950";
     const fotoLink = d.foto ? driveToView(d.foto) : "";
 
+    let selisihClass = "text-slate-500";
+    let selisihBadge = "";
+
+    if(d.selisih_meter > 0){
+      selisihClass = "text-green-400/80";
+    }
+    if(d.selisih_meter >= EXTREME_LIMIT){
+      selisihClass = "text-amber-400 font-semibold";
+      selisihBadge = `<span class="ml-1 text-amber-400">⚠️</span>`;
+    }
+
     tbody.innerHTML += `
     <tr class="${zebra} hover:bg-slate-800/60 border-b border-slate-800/60">
-      <td class="px-3 py-2.5 text-slate-300">${d.rusunawa}</td>
-      <td class="px-3 py-2.5 font-medium text-blue-400">${d.no_kamar}</td>
-      <td class="px-3 py-2.5 text-slate-400">${new Date(d.tanggal).toLocaleDateString("id-ID")}</td>
-      <td class="px-3 py-2.5 text-right tracking-wide">${d.angka_meter}</td>
-      <td class="px-3 py-2.5 text-right font-medium ${d.selisih_meter>0?'text-green-400/80':'text-slate-500'}">
-        ${d.selisih_meter}
+      <td class="px-3 py-3 text-slate-300 whitespace-nowrap">${d.rusunawa}</td>
+      <td class="px-3 py-3 font-medium text-blue-400 whitespace-nowrap">${d.no_kamar}</td>
+      <td class="px-3 py-3 text-slate-400 whitespace-nowrap">${new Date(d.tanggal).toLocaleDateString("id-ID")}</td>
+      <td class="px-3 py-3 text-right tracking-wide">${d.angka_meter}</td>
+      <td class="px-3 py-3 text-right ${selisihClass}">
+        ${d.selisih_meter}${selisihBadge}
       </td>
-      <td class="px-3 py-2.5 text-center">
+      <td class="px-3 py-3 text-center">
         ${fotoLink
-          ? `<a href="${fotoLink}" target="_blank" class="text-blue-400/80 hover:text-blue-400 underline">lihat</a>`
+          ? `<a href="${fotoLink}" target="_blank"
+               class="text-blue-400/80 hover:text-blue-400 underline px-2 py-1 inline-block">
+               lihat
+             </a>`
           : "-"}
       </td>
     </tr>`;
