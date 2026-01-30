@@ -62,35 +62,18 @@
   </div>
 </div>
 
-<!-- MODAL FOTO -->
-<div id="fotoModal"
-  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm">
-  <div class="relative bg-slate-900 rounded-2xl p-4 max-w-4xl w-[95%] shadow-2xl">
-    <button onclick="closeFoto()"
-      class="absolute top-3 right-3 text-slate-400 hover:text-red-400 text-xl font-bold">✕</button>
-    <h3 class="text-sm font-semibold text-blue-400 mb-3">Foto Angka Meter</h3>
-    <div class="flex justify-center">
-      <img id="fotoImg"
-        class="max-h-[75vh] rounded-xl border border-slate-700 shadow-lg"
-        onerror="this.onerror=null;this.src='';alert('Foto tidak dapat dimuat');">
-    </div>
-  </div>
-</div>
-
 <script>
 let allData = [];
 let filteredData = [];
 let page = 1;
 const limit = 50;
 
-/* ================== HELPER FOTO ================== */
-function normalizeDriveUrl(url){
+/* ====== KONVERSI LINK GOOGLE DRIVE ====== */
+function driveToView(url){
   if(!url) return "";
-  if(url.includes("drive.google.com")){
-    const m = url.match(/id=([^&]+)/);
-    if(m && m[1]){
-      return "https://drive.google.com/uc?export=view&id=" + m[1];
-    }
+  const m = url.match(/id=([^&]+)/);
+  if(m && m[1]){
+    return "https://drive.google.com/file/d/" + m[1] + "/view";
   }
   return url;
 }
@@ -150,6 +133,8 @@ function render(){
 
   slice.forEach((d,i)=>{
     const zebra = i % 2 ? "bg-slate-900" : "bg-slate-950";
+    const fotoLink = d.foto ? driveToView(d.foto) : "";
+
     tbody.innerHTML += `
     <tr class="${zebra} hover:bg-slate-800 transition">
       <td class="px-3 py-2">${d.rusunawa}</td>
@@ -160,8 +145,9 @@ function render(){
         ${d.selisih_meter}
       </td>
       <td class="px-3 py-2 text-center">
-        ${d.foto
-          ? `<button onclick="openFoto('${d.foto}')" class="text-blue-400 underline">lihat</button>`
+        ${fotoLink
+          ? `<a href="${fotoLink}" target="_blank" rel="noopener"
+               class="text-blue-400 underline font-semibold">lihat</a>`
           : "-"}
       </td>
     </tr>`;
@@ -173,30 +159,6 @@ function render(){
 
 function nextPage(){ if(page*limit < filteredData.length){ page++; render(); } }
 function prevPage(){ if(page>1){ page--; render(); } }
-
-function openFoto(url){
-  const imgUrl = normalizeDriveUrl(url);
-  fotoImg.src = imgUrl;
-  fotoModal.classList.remove("hidden");
-  fotoModal.classList.add("flex");
-  document.body.style.overflow = "hidden";
-}
-
-function closeFoto(){
-  fotoModal.classList.add("hidden");
-  fotoModal.classList.remove("flex");
-  fotoImg.src = "";
-  document.body.style.overflow = "";
-}
-
-fotoModal.addEventListener("click",e=>{
-  if(e.target === fotoModal) closeFoto();
-});
-document.addEventListener("keydown",e=>{
-  if(e.key === "Escape" && !fotoModal.classList.contains("hidden")){
-    closeFoto();
-  }
-});
 
 loadPDAM();
 </script>
