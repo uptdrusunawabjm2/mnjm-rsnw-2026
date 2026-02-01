@@ -277,11 +277,7 @@ function openDetail(d){
     ${gridRow("Tanggal Penetapan",d.tgl_penetapan_calon_penghuni)}
     ${gridRow("No Perjanjian",d.no_perjanjian_penghuni)}
     ${gridRow("Mulai Perjanjian",d.tgl_perjanjian_mulai_penghuni)}
-    <div class="text-slate-400">Akhir Perjanjian</div>
-    <div class="font-semibold flex items-center gap-2">
-      ${fmtTanggal(d.tgl_perjanjian_akhir_penghuni)}
-      ${kontrakBadge(d.tgl_perjanjian_akhir_penghuni)}
-    </div>
+    ${gridRow("Akhir Perjanjian",d.tgl_perjanjian_akhir_penghuni)}
     ${gridRow("No BAPS",d.no_baps_penghuni)}
     ${gridRow("Tanggal BAPS",d.tgl_baps_penghuni)}
     ${gridRow("No BAST",d.no_bast_penghuni)}
@@ -332,3 +328,7 @@ loadData();
 </script>
 </body>
 </html>
+
+
+
+
