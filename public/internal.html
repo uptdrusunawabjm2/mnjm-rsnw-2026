@@ -321,11 +321,15 @@ function openDetail(d){
       ${gridRow("Status",d.statusPenjamin)}
     </div>
   `)+
+  section("STATUS KEUANGAN",`
+    <div class="grid grid-cols-2 gap-2 text-sm">
+      ${gridRow("Total Bayar","Rp "+Number(d.pembayaran).toLocaleString("id-ID"))}
+      ${gridRow("Tunggakan","Rp "+Number(d.tunggakan).toLocaleString("id-ID"))}
+    </div>
+    `)+
   section("STATUS UNIT & KEUANGAN",`
     <div class="grid grid-cols-2 gap-2 text-sm">
       ${gridRow("Kondisi Unit",d.kondisiunit)}
-      ${gridRow("Total Bayar","Rp "+Number(d.pembayaran).toLocaleString("id-ID"))}
-      ${gridRow("Tunggakan","Rp "+Number(d.tunggakan).toLocaleString("id-ID"))}
     </div>
   `);
 
@@ -345,4 +349,5 @@ loadData();
 </script>
 </body>
 </html>
+
 
