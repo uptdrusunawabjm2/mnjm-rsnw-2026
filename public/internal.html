@@ -210,13 +210,12 @@ function anggotaCard(title,o){
       ${gridRow("Nama",o.nama)}
       ${gridRow("NIK",o.nik)}
       ${gridRow("Jenis Kelamin",o.jk)}
-      ${gridRow("TTL",o.ttl)}
+      ${gridRow("TTL",fmtTanggal(o.ttl))}
       ${gridRow("Umur",o.umur)}
       ${gridRow("Status",o.status)}
       ${gridRow("Disabilitas",o.disabilitas)}
     </div></div>`;
 }
-
 
 function fmtTanggal(val){
   if(!val) return "-";
@@ -224,14 +223,15 @@ function fmtTanggal(val){
   if(isNaN(d)) return val;
   return d.toLocaleDateString("id-ID",{day:"2-digit",month:"2-digit",year:"numeric"});
 }
+
 function kontrakBadge(val){
   if(!val) return "";
   const end = new Date(val);
   if(isNaN(end)) return "";
   const now = new Date();
   const diff = Math.ceil((end-now)/(1000*60*60*24));
-  if(diff < 0) return '<span class="badge badge-rusak">HABIS</span>';
-  if(diff <= 30) return '<span class="badge badge-siap">AKAN HABIS ('+diff+' hari)</span>';
+  if(diff < 0) return '<span class="badge badge-rusak ml-2">HABIS</span>';
+  if(diff <= 30) return '<span class="badge badge-siap ml-2">AKAN HABIS ('+diff+' hari)</span>';
   return "";
 }
 
@@ -243,7 +243,7 @@ function openDetail(d){
     <div class="grid grid-cols-2 gap-2 text-sm">
       ${gridRow("Nama",d.nama)}
       ${gridRow("NIK",d.nik)}
-      ${gridRow("TTL",d.ttl)}
+      ${gridRow("TTL",fmtTanggal(d.ttl))}
       ${gridRow("Agama",d.agama)}
       ${gridRow("Status Perkawinan",d.statusPerkawinan)}
     </div>
@@ -264,27 +264,44 @@ function openDetail(d){
       ${gridRow("Penghasilan Pasangan",d.penghasilanPasangan)}
       ${gridRow("Total Penghasilan",d.totalPenghasilan)}
     </div>
-    `)+
-    section("DATA ADMINISTRASI",`
-  <div class="grid grid-cols-2 gap-2 text-sm">
-    ${gridRow("No Daftar Formulir",d.no_daftar_formulir)}
-    ${gridRow("Tanggal Daftar",d.tgl_daftar)}
-    ${gridRow("No Persetujuan",d.no_setuju_calon_penghuni)}
-    ${gridRow("Tanggal Persetujuan",d.tgl_setuju_calon_penghuni)}
-    ${gridRow("No Panggilan",d.no_panggilan_calon_penghuni)}
-    ${gridRow("Tanggal Panggilan",d.tgl_panggilan_calon_penghuni)}
-    ${gridRow("No Penetapan",d.no_penetapan_calon_penghuni)}
-    ${gridRow("Tanggal Penetapan",d.tgl_penetapan_calon_penghuni)}
-    ${gridRow("No Perjanjian",d.no_perjanjian_penghuni)}
-    ${gridRow("Mulai Perjanjian",d.tgl_perjanjian_mulai_penghuni)}
-    ${gridRow("Akhir Perjanjian",d.tgl_perjanjian_akhir_penghuni)}
-    ${gridRow("No BAPS",d.no_baps_penghuni)}
-    ${gridRow("Tanggal BAPS",d.tgl_baps_penghuni)}
-    ${gridRow("No BAST",d.no_bast_penghuni)}
-    ${gridRow("Tanggal BAST",d.tgl_bast_penghuni)}
-    ${gridRow("No Izin",d.no_izin_penghuni)}
-    ${gridRow("Tanggal Izin",d.tgl_izin_penghuni)}
-  </div>
+  `)+
+  section("DATA ADMINISTRASI",`
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+
+      <div class="bg-slate-800 p-4 rounded-xl">
+        <h4 class="font-bold text-blue-400 mb-3">Pendaftaran</h4>
+        <div class="grid grid-cols-2 gap-2">
+          ${gridRow("No Daftar Formulir",d.no_daftar_formulir)}
+          ${gridRow("Tanggal Daftar",fmtTanggal(d.tgl_daftar))}
+          ${gridRow("No Persetujuan",d.no_setuju_calon_penghuni)}
+          ${gridRow("Tanggal Persetujuan",fmtTanggal(d.tgl_setuju_calon_penghuni))}
+        </div>
+      </div>
+
+      <div class="bg-slate-800 p-4 rounded-xl">
+        <h4 class="font-bold text-blue-400 mb-3">Penetapan</h4>
+        <div class="grid grid-cols-2 gap-2">
+          ${gridRow("No Panggilan",d.no_panggilan_calon_penghuni)}
+          ${gridRow("Tanggal Panggilan",fmtTanggal(d.tgl_panggilan_calon_penghuni))}
+          ${gridRow("No Penetapan",d.no_penetapan_calon_penghuni)}
+          ${gridRow("Tanggal Penetapan",fmtTanggal(d.tgl_penetapan_calon_penghuni))}
+        </div>
+      </div>
+
+      <div class="bg-slate-800 p-4 rounded-xl">
+        <h4 class="font-bold text-blue-400 mb-3">Perjanjian</h4>
+        <div class="grid grid-cols-2 gap-2">
+          ${gridRow("No Perjanjian",d.no_perjanjian_penghuni)}
+          ${gridRow("Mulai Perjanjian",fmtTanggal(d.tgl_perjanjian_mulai_penghuni))}
+          <div class="text-slate-400">Akhir Perjanjian</div>
+          <div class="font-semibold">
+            ${fmtTanggal(d.tgl_perjanjian_akhir_penghuni)}
+            ${kontrakBadge(d.tgl_perjanjian_akhir_penghuni)}
+          </div>
+        </div>
+      </div>
+
+    </div>
   `)+
   section("ANGGOTA KELUARGA",`
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -309,7 +326,6 @@ function openDetail(d){
       ${gridRow("Total Bayar","Rp "+Number(d.pembayaran).toLocaleString("id-ID"))}
       ${gridRow("Tunggakan","Rp "+Number(d.tunggakan).toLocaleString("id-ID"))}
     </div>
-  
   `);
 
   modal.classList.remove("hidden");
@@ -328,7 +344,3 @@ loadData();
 </script>
 </body>
 </html>
-
-
-
-
