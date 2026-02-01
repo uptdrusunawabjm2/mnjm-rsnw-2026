@@ -19,6 +19,12 @@
 #sidebar.collapsed .menu-text{display:none}
 #sidebar.collapsed h1{font-size:0}
 #sidebar.collapsed h1:after{content:"🏠";font-size:22px}
+
+/* =====================================================
+   HANYA MENYEMBUNYIKAN CARD PERJANJIAN (UI LEVEL)
+   TIDAK MENGHAPUS HTML / JS
+   ===================================================== */
+.card-perjanjian-hidden{display:none!important}
 </style>
 </head>
 
@@ -235,7 +241,7 @@ function kontrakBadge(val){
   return "";
 }
 
-/* ===== TAMBAHAN BARU: RIWAYAT PERJANJIAN ===== */
+/* ===== RIWAYAT PERJANJIAN ===== */
 function renderRiwayatPerjanjian(list){
   if(!Array.isArray(list)||list.length===0){
     return `<div class="text-slate-400 text-sm italic">Belum ada data perjanjian</div>`;
@@ -326,7 +332,8 @@ function openDetail(d){
         </div>
       </div>
 
-      <div class="bg-slate-800 p-4 rounded-xl order-1 md:order-4">
+      <!-- CARD PERJANJIAN TETAP ADA, NAMUN DISEMBUNYIKAN -->
+      <div class="bg-slate-800 p-4 rounded-xl order-1 md:order-4 card-perjanjian-hidden">
         <h4 class="font-bold text-blue-400 mb-3">Perjanjian</h4>
         <div class="grid grid-cols-2 gap-2">
           ${gridRow("No Perjanjian",d.no_perjanjian_penghuni)}
@@ -334,7 +341,7 @@ function openDetail(d){
           <div class="text-slate-400">Tanggal Akhir</div>
           <div class="font-semibold">
             ${fmtTanggal(d.tgl_perjanjian_akhir_penghuni)}
-            ${kontrakBadge(d.tgl_perjanjian_akhir_penghuni)}
+            ${false && kontrakBadge(d.tgl_perjanjian_akhir_penghuni)}
           </div>
         </div>
       </div>
