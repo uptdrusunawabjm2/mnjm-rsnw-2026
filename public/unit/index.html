@@ -2,27 +2,81 @@
 <html lang="id" class="dark">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Informasi Unit Penghuni</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            base: '#020617',
+            panel: '#020617cc'
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
 
-  <div class="max-w-4xl mx-auto px-6 py-10">
-    <h1 class="text-2xl font-bold text-center">
-      Rusunawa Kota Banjarmasin
-    </h1>
-    <p class="text-center text-slate-400 mt-1">
-      Informasi Unit Penghuni (Read Only)
-    </p>
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
 
-    <div id="alert" class="hidden mt-6 rounded-lg p-4 text-center"></div>
+  <main class="max-w-4xl mx-auto px-5 py-12">
 
-    <div id="content" class="hidden mt-8 space-y-6"></div>
+    <!-- HEADER -->
+    <header class="text-center mb-10">
+      <h1 class="text-3xl font-bold tracking-tight">
+        Rusunawa Kota Banjarmasin
+      </h1>
+      <p class="text-slate-400 mt-1 text-sm">
+        Informasi Unit Penghuni <span class="opacity-70">(Read Only)</span>
+      </p>
+    </header>
 
-    <p class="text-center text-xs text-slate-500 mt-10">
-      Data ini bersifat informatif & tidak dapat diubah.
-    </p>
-  </div>
+    <!-- ALERT -->
+    <div id="alert"
+      class="hidden mb-8 rounded-xl border border-red-800/40 bg-red-950/60 px-5 py-4 text-center text-red-300">
+    </div>
+
+    <!-- CONTENT -->
+    <section id="content" class="hidden space-y-6">
+
+      <!-- UNIT CARD -->
+      <div class="rounded-2xl bg-slate-900/70 backdrop-blur border border-slate-800 shadow-lg p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 id="unitTitle" class="text-xl font-semibold tracking-tight"></h2>
+            <p class="text-slate-400 text-sm mt-1">Unit Hunian Aktif</p>
+          </div>
+          <span id="kondisiBadge"
+            class="inline-flex items-center justify-center rounded-full px-4 py-1 text-sm font-medium">
+          </span>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+          <div class="rounded-lg bg-slate-950/70 border border-slate-800 p-4">
+            <div class="text-slate-400 mb-1">Nama Penghuni</div>
+            <div id="namaPenghuni" class="font-medium"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIWAYAT -->
+      <div class="rounded-2xl bg-slate-900/70 backdrop-blur border border-slate-800 shadow-lg p-6">
+        <h3 class="text-lg font-semibold mb-4">Riwayat Nama Penghuni</h3>
+        <ul id="riwayatList"
+          class="space-y-2 text-sm list-disc list-inside text-slate-200">
+        </ul>
+      </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="mt-12 text-center text-xs text-slate-500">
+      Data ini bersifat informatif dan tidak dapat diubah.
+    </footer>
+
+  </main>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycbzjABRVgRaoMj3Y1gCU_DRJpnZIvkGwxRRxmPW6buV1POsQ87GQCLAeEBG5j9jJZux7iQ/exec";
@@ -33,9 +87,13 @@ const token = params.get("token");
 const alertBox = document.getElementById("alert");
 const content  = document.getElementById("content");
 
+const unitTitle = document.getElementById("unitTitle");
+const namaPenghuni = document.getElementById("namaPenghuni");
+const kondisiBadge = document.getElementById("kondisiBadge");
+const riwayatList = document.getElementById("riwayatList");
+
 function showError(msg){
-  alertBox.className = "mt-6 rounded-lg p-4 text-center bg-red-900/40 text-red-300";
-  alertBox.innerText = msg;
+  alertBox.textContent = msg;
   alertBox.classList.remove("hidden");
 }
 
@@ -51,22 +109,37 @@ if(!token){
       }
 
       const d = res.data;
-      content.innerHTML = `
-        <div class="bg-slate-900 rounded-xl p-6">
-          <h2 class="text-xl font-semibold mb-4">Unit ${d.unit}</h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-            <div><span class="text-slate-400">Nama Penghuni</span><br>${d.nama || "-"}</div>
-            <div><span class="text-slate-400">Kondisi Unit</span><br>${d.kondisiunit}</div>
-          </div>
-        </div>
 
-        <div class="bg-slate-900 rounded-xl p-6">
-          <h3 class="font-semibold mb-2">Riwayat Nama Penghuni</h3>
-          <ul class="list-disc ml-6 text-sm">
-            ${(d.riwayatNamaPenghuni || []).map(n=>`<li>${n}</li>`).join("") || "<li>-</li>"}
-          </ul>
-        </div>
-      `;
+      unitTitle.textContent = `Unit ${d.unit}`;
+      namaPenghuni.textContent = d.nama || "-";
+
+      const kondisi = (d.kondisiunit || "").toLowerCase();
+      let badgeClass = "bg-slate-700 text-slate-200";
+      let badgeText  = d.kondisiunit || "-";
+
+      if(kondisi.includes("terisi")){
+        badgeClass = "bg-blue-900/60 text-blue-300";
+      } else if(kondisi.includes("siap")){
+        badgeClass = "bg-emerald-900/60 text-emerald-300";
+      } else if(kondisi.includes("rusak")){
+        badgeClass = "bg-red-900/60 text-red-300";
+      }
+
+      kondisiBadge.className =
+        `rounded-full px-4 py-1 text-sm font-medium ${badgeClass}`;
+      kondisiBadge.textContent = badgeText;
+
+      riwayatList.innerHTML = "";
+      if(d.riwayatNamaPenghuni && d.riwayatNamaPenghuni.length){
+        d.riwayatNamaPenghuni.forEach(n=>{
+          const li = document.createElement("li");
+          li.textContent = n;
+          riwayatList.appendChild(li);
+        });
+      } else {
+        riwayatList.innerHTML = "<li>-</li>";
+      }
+
       content.classList.remove("hidden");
     })
     .catch(()=>{
