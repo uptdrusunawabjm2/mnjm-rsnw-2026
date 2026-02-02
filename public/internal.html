@@ -273,6 +273,18 @@ function renderRiwayatPerjanjian(list){
   </div>`;
 }
 
+
+/* ===== TAMBAHAN BARU: RIWAYAT NAMA PENGHUNI (READ-ONLY) ===== */
+function renderRiwayatNamaPenghuni(list){
+  if(!Array.isArray(list) || list.length===0){
+    return `<div class="text-slate-400 text-sm italic">Belum ada riwayat penghuni</div>`;
+  }
+  return `<ul class="list-disc list-inside text-sm text-slate-200 space-y-1">
+    ${list.map(n=>`<li>${n}</li>`).join("")}
+  </ul>`;
+}
+/* =========================================================== */
+
 function openDetail(d){
   judulDetail.innerText="Detail Penghuni - Unit "+d.unit;
 
@@ -376,6 +388,11 @@ function openDetail(d){
   section("STATUS UNIT",`
     <div class="grid grid-cols-2 gap-2 text-sm">
       ${gridRow("Kondisi Unit",d.kondisiunit)}
+    </div>
+
+    <div class="mt-4">
+      <div class="text-slate-400 text-sm mb-1">Riwayat Penghuni</div>
+      ${renderRiwayatNamaPenghuni(d.riwayatNamaPenghuni)}
     </div>
   `);
 
