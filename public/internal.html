@@ -25,6 +25,35 @@
 .tabular-nums{font-variant-numeric:tabular-nums}
 /* ============================================================= */
 
+
+/* ===== UI ADD-ONLY: ADMINISTRASI + PERJANJIAN COMPOSITION ===== */
+.section-like-status {
+  background: linear-gradient(180deg, rgba(15,23,42,.85), rgba(2,6,23,.9));
+  border-radius: 1rem;
+  padding: 1rem;
+}
+.admin-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.perjanjian-card {
+  background: rgba(15,23,42,.9);
+  border: 1px solid rgba(51,65,85,.6);
+  border-radius: .75rem;
+  padding: .75rem;
+}
+.perjanjian-label {
+  font-size: .75rem;
+  color: #94a3b8;
+  margin-bottom: .5rem;
+}
+/* Hide big header visually, keep in DOM */
+.hide-section-title > h3 {
+  display: none;
+}
+/* ============================================================= */
+
 </style>
 </head>
 
@@ -356,6 +385,8 @@ function openDetail(d){
     </div>
   `)+
   section("DATA ADMINISTRASI",`
+    <div class="section-like-status admin-wrapper">
+      
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
 
       <div class="bg-slate-800 p-4 rounded-xl order-4 md:order-1">
@@ -398,10 +429,19 @@ function openDetail(d){
       </div>
 
     </div>
-  `)+
+  
+    </div>
+    `)+
   section("RIWAYAT PERJANJIAN",`
+    <div class="hide-section-title">
+      <div class="perjanjian-label">Riwayat Perjanjian</div>
+      <div class="perjanjian-card">
+        
     ${renderRiwayatPerjanjian(d.riwayatPerjanjian)}
-  `)+
+  
+      </div>
+    </div>
+    `)+
   section("ANGGOTA KELUARGA",`
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       ${anggotaCard("Anggota 1",{nama:d.anggota1,nik:d.nik1,jk:d.jk1,ttl:d.ttl1,umur:d.umur1,status:d.status1,disabilitas:d.disabilitas1})}
