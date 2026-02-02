@@ -234,7 +234,14 @@ function section(title,content){
 }
 
 function gridRow(label,val){
-  return `<div class="text-slate-400">${label}</div><div class="font-semibold">${val||"-"}</div>`;
+  return `
+    <div class="text-[11px] uppercase tracking-wide text-slate-500">
+      ${label}
+    </div>
+    <div class="text-slate-100 font-medium leading-relaxed">
+      ${val||"-"}
+    </div>
+  `;
 }
 
 function anggotaCard(title,o){
@@ -493,3 +500,4 @@ loadData();
 </script>
 </body>
 </html>
+
