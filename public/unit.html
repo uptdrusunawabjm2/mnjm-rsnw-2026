@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Data Unit Penghuni</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
+</head>
+
+<body class="dark bg-slate-950 text-slate-200 min-h-screen">
+  <div class="max-w-6xl mx-auto px-4 py-6 space-y-6">
+
+    <!-- HEADER -->
+    <header class="text-center space-y-1">
+      <h1 class="text-2xl font-bold text-white">
+        Rusunawa Kota Banjarmasin
+      </h1>
+      <p class="text-slate-400 text-sm">
+        Informasi Unit Penghuni (Read Only)
+      </p>
+    </header>
+
+    <!-- ALERT -->
+    <div id="alert" class="hidden p-4 rounded-xl bg-red-900/40 text-red-200 text-center"></div>
+
+    <!-- CONTENT -->
+    <div id="content" class="space-y-6 hidden">
+
+      <!-- IDENTITAS -->
+      <section class="bg-slate-900/60 rounded-2xl p-5">
+        <h2 class="text-lg font-semibold text-blue-400 mb-4">Identitas Penghuni</h2>
+        <div class="grid md:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div><span class="text-slate-400">Nama</span><br><span id="nama"></span></div>
+          <div><span class="text-slate-400">Unit</span><br><span id="unit"></span></div>
+          <div><span class="text-slate-400">Kondisi Unit</span><br><span id="kondisi"></span></div>
+        </div>
+      </section>
+
+      <!-- RIWAYAT NAMA -->
+      <section class="bg-slate-900/60 rounded-2xl p-5">
+        <h2 class="text-lg font-semibold text-blue-400 mb-4">Riwayat Nama Penghuni</h2>
+        <ul id="riwayatNama" class="list-disc pl-5 space-y-1 text-sm"></ul>
+      </section>
+
+      <!-- RIWAYAT TUNGGAKAN -->
+      <section class="bg-slate-900/60 rounded-2xl p-5 overflow-x-auto">
+        <h2 class="text-lg font-semibold text-blue-400 mb-4">Riwayat Tunggakan</h2>
+        <table class="min-w-full text-sm border border-slate-700">
+          <thead class="bg-slate-800 text-slate-300">
+            <tr>
+              <th class="px-3 py-2 border">Nama</th>
+              <th class="px-3 py-2 border">Bulan 24</th>
+              <th class="px-3 py-2 border">Uang 24</th>
+              <th class="px-3 py-2 border">Bulan 25</th>
+              <th class="px-3 py-2 border">Uang 25</th>
+              <th class="px-3 py-2 border">Bulan 26</th>
+              <th class="px-3 py-2 border">Uang 26</th>
+            </tr>
+          </thead>
+          <tbody id="riwayatDetail"></tbody>
+        </table>
+      </section>
+
+      <!-- RIWAYAT PERJANJIAN -->
+      <section class="bg-slate-900/60 rounded-2xl p-5 overflow-x-auto">
+        <h2 class="text-lg font-semibold text-blue-400 mb-4">Riwayat Perjanjian</h2>
+        <table class="min-w-full text-sm border border-slate-700">
+          <thead class="bg-slate-800 text-slate-300">
+            <tr>
+              <th class="px-3 py-2 border">No Perjanjian</th>
+              <th class="px-3 py-2 border">Mulai</th>
+              <th class="px-3 py-2 border">Akhir</th>
+            </tr>
+          </thead>
+          <tbody id="riwayatPerjanjian"></tbody>
+        </table>
+      </section>
+
+    </div>
+
+  </div>
+
+<script>
+(function(){
+  document.documentElement.classList.add('dark');
+
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  const alertBox = document.getElementById("alert");
+  const content = document.getElementById("content");
+
+  if(!token){
+    alertBox.textContent = "Token tidak ditemukan.";
+    alertBox.classList.remove("hidden");
+    return;
+  }
+
+  // === SESUAI BACKEND ANDA ===
+  const API_URL = "/api/data?action=unit&token=" + encodeURIComponent(token);
+
+  fetch(API_URL)
+    .then(r => r.json())
+    .then(res => {
+      if(!res.status){
+        alertBox.textContent = res.message || "Akses ditolak.";
+        alertBox.classList.remove("hidden");
+        return;
+      }
+
+      const d = res.data;
+      content.classList.remove("hidden");
+
+      document.getElementById("nama").textContent = d.nama || "-";
+      document.getElementById("unit").textContent = d.unit || "-";
+      document.getElementById("kondisi").textContent = d.kondisiunit || "-";
+
+      // Riwayat Nama
+      const rn = document.getElementById("riwayatNama");
+      rn.innerHTML = "";
+      if(!d.riwayatNamaPenghuni || d.riwayatNamaPenghuni.length === 0){
+        rn.innerHTML = "<li class='text-slate-500'>Belum ada riwayat</li>";
+      } else {
+        d.riwayatNamaPenghuni.forEach(n=>{
+          const li=document.createElement("li");
+          li.textContent=n;
+          rn.appendChild(li);
+        });
+      }
+
+      // Riwayat Tunggakan
+      const rd = document.getElementById("riwayatDetail");
+      rd.innerHTML="";
+      d.riwayatPenghuniDetail.forEach(r=>{
+        rd.insertAdjacentHTML("beforeend",`
+          <tr>
+            <td class="border px-2 py-1">${r.nama}</td>
+            <td class="border px-2 py-1 text-center">${r.bulan_tunggak_24}</td>
+            <td class="border px-2 py-1 text-right">Rp ${r.uang_tunggak_24.toLocaleString()}</td>
+            <td class="border px-2 py-1 text-center">${r.bulan_tunggak_25}</td>
+            <td class="border px-2 py-1 text-right">Rp ${r.uang_tunggak_25.toLocaleString()}</td>
+            <td class="border px-2 py-1 text-center">${r.bulan_tunggak_26}</td>
+            <td class="border px-2 py-1 text-right">Rp ${r.uang_tunggak_26.toLocaleString()}</td>
+          </tr>
+        `);
+      });
+
+      // Riwayat Perjanjian
+      const rp = document.getElementById("riwayatPerjanjian");
+      rp.innerHTML="";
+      d.riwayatPerjanjian.forEach(p=>{
+        rp.insertAdjacentHTML("beforeend",`
+          <tr>
+            <td class="border px-2 py-1">${p.no_perjanjian_penghuni || "-"}</td>
+            <td class="border px-2 py-1">${p.tgl_perjanjian_mulai_penghuni || "-"}</td>
+            <td class="border px-2 py-1">${p.tgl_perjanjian_akhir_penghuni || "-"}</td>
+          </tr>
+        `);
+      });
+
+    })
+    .catch(err=>{
+      alertBox.textContent = "Gagal memuat data.";
+      alertBox.classList.remove("hidden");
+    });
+})();
+</script>
+
+</body>
+</html>
