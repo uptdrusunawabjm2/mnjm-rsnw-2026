@@ -375,7 +375,7 @@ function openDetail(d){
     </div>
   `)+
   section("KONTAK & DOMISILI",`
-    <div class="grid grid-cols-2 gap-2 text-sm">
+    <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-x-4 gap-y-2">
       ${gridRow("Alamat",d.alamat)}
       ${gridRow("No HP", d.telp || d.notelp || d.nohp || d.hp || d["nomor telp"] || d["nomor telp./hp"] || d["no telp"] || "-")}
       ${gridRow("Email",d.email)}
@@ -383,7 +383,7 @@ function openDetail(d){
     </div>
   `)+
   section("PEKERJAAN & PENGHASILAN",`
-    <div class="grid grid-cols-2 gap-2 text-sm">
+    <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-x-4 gap-y-2">
       ${gridRow("Pekerjaan",d.pekerjaan)}
       ${gridRow("Penghasilan",d.penghasilan)}
       ${gridRow("Pekerjaan Pasangan",d.pekerjaanPasangan)}
@@ -458,7 +458,7 @@ function openDetail(d){
     </div>
   `)+
   section("DATA PENJAMIN",`
-    <div class="grid grid-cols-2 gap-2 text-sm">
+    <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-x-4 gap-y-2">
       ${gridRow("Nama",d.penjamin)}
       ${gridRow("NIK",d.nikPenjamin)}
       ${gridRow("Alamat",d.alamatPenjamin)}
@@ -467,13 +467,13 @@ function openDetail(d){
     </div>
   `)+
   section("STATUS KEUANGAN",`
-    <div class="grid grid-cols-2 gap-2 text-sm">
+    <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-x-4 gap-y-2">
       ${gridRow("Total Bayar","Rp "+Number(d.pembayaran).toLocaleString("id-ID"))}
       ${gridRow("Tunggakan","Rp "+Number(d.tunggakan).toLocaleString("id-ID"))}
     </div>
   `)+
   section("STATUS UNIT",`
-    <div class="grid grid-cols-2 gap-2 text-sm">
+    <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-x-4 gap-y-2">
       ${gridRow("Kondisi Unit",d.kondisiunit)}
     </div>
   
@@ -500,6 +500,7 @@ loadData();
 </script>
 </body>
 </html>
+
 
 
 
