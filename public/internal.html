@@ -366,7 +366,7 @@ function openDetail(d){
 
   detailBox.innerHTML=
   section("IDENTITAS PENGHUNI",`
-    <div class="grid grid-cols-2 gap-2 text-sm">
+    <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-x-4 gap-y-2">
       ${gridRow("Nama",d.nama)}
       ${gridRow("NIK",d.nik)}
       ${gridRow("TTL",fmtTanggal(d.ttl))}
@@ -500,5 +500,6 @@ loadData();
 </script>
 </body>
 </html>
+
 
 
