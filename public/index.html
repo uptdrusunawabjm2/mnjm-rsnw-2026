@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Rusunawa</title>
-<script src="https://cdn.tailwindcss.com"></script>
 
 <style>
 #sidebar { transition: transform 0.3s ease; }
@@ -49,7 +49,7 @@ class="fixed top-5 left-5 z-50 bg-slate-800 hover:bg-slate-700 px-3 py-2 rounded
   Rusunawa Kota Banjarmasin
 </h1>
 
-<div id="cards" class="grid grid-cols-6 md:grid-cols-5 gap-4 mb-10"></div>
+<div id="cards" class="grid grid-cols-6 md:grid-cols-5 gap-3 mb-8"></div>
 
 <h2 class="text-xl font-bold mb-4"></h2>
 <div id="perRusun" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
@@ -73,7 +73,7 @@ async function load(){
   const persenGlobal = g.total ? ((g.terisi / g.total) * 100).toFixed(1) : 0;
 
   cards.innerHTML = `
-  <!-- Baris 1 -->
+  <!-- BARIS 1 -->
   <div class="col-span-3 md:col-span-1">
     ${card("Total Unit", g.total, "from-slate-700 to-slate-800")}
   </div>
@@ -82,7 +82,7 @@ async function load(){
     ${card("Persentase", persenGlobal + " %", "from-purple-600 to-purple-700")}
   </div>
 
-  <!-- Baris 2 -->
+  <!-- BARIS 2 -->
   <div class="col-span-2 md:col-span-1">
     ${card("Siap Huni", g.siap, "from-green-600 to-green-700")}
   </div>
