@@ -55,6 +55,49 @@
 }
 /* ============================================================= */
 
+/* ===== MODE PDF MINIMALIS ===== */
+.pdf-mode {
+  background: white !important;
+  color: #111827 !important;
+}
+
+.pdf-mode .bg-slate-800,
+.pdf-mode .bg-slate-900,
+.pdf-mode .bg-slate-800\/60,
+.pdf-mode .bg-slate-950,
+.pdf-mode .section-like-status,
+.pdf-mode .perjanjian-card {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+}
+
+.pdf-mode h3,
+.pdf-mode h4 {
+  color: #1E3A8A !important;
+}
+
+.pdf-mode .text-blue-400 {
+  color: #1E3A8A !important;
+}
+
+.pdf-mode .text-slate-400,
+.pdf-mode .text-slate-500 {
+  color: #6B7280 !important;
+}
+
+.pdf-mode table {
+  background: white !important;
+  color: #111827 !important;
+}
+
+.pdf-mode thead {
+  background: #F1F5F9 !important;
+}
+
+.pdf-mode .badge {
+  border: none !important;
+}
+/* =============================== */
 </style>
 </head>
 
@@ -579,15 +622,28 @@ function openDetail(d){
 function exportPDF(){
   const element = document.getElementById("detailBox");
 
+  // Aktifkan mode PDF
+  element.classList.add("pdf-mode");
+
   const opt = {
-    margin: 10,
+    margin: 12,
     filename: judulDetail.innerText.replace(/\s+/g,"_") + ".pdf",
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    html2canvas: { 
+      scale: 2,
+      backgroundColor: "#ffffff"
+    },
+    jsPDF: { 
+      unit: 'mm', 
+      format: 'a4', 
+      orientation: 'portrait' 
+    }
   };
 
-  html2pdf().set(opt).from(element).save();
+  html2pdf().set(opt).from(element).save().then(()=>{
+    // Kembalikan ke mode normal
+    element.classList.remove("pdf-mode");
+  });
 }
 
 function closeModal(){
