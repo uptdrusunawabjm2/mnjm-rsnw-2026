@@ -621,11 +621,37 @@ function openDetail(d){
 
 function exportPDF(){
 
-  const unit = judulDetail.innerText.replace("Detail Penghuni - Unit ","");
-  const d = allData.find(x => x.unit === unit);
+  const unitText = judulDetail.innerText.replace("Detail Penghuni - Unit ","").trim();
+  const d = allData.find(x => x.unit.toLowerCase() === unitText.toLowerCase());
   if(!d) return;
 
   const cetakTanggal = new Date().toLocaleDateString("id-ID");
+
+  /* =========================
+     PARSING LOGIKA RUSUN
+  ========================== */
+
+  const unitUpper = d.unit.toUpperCase();
+
+  let rusunawa = "-";
+  if(unitUpper.startsWith("GM")) rusunawa = "RUSUNAWA GANDA MAGHFIRAH";
+  if(unitUpper.startsWith("TK")) rusunawa = "RUSUNAWA TELUK KELAYAN";
+
+  let blok = "-";
+  let lantai = "-";
+  let noUnit = "-";
+
+  const match = unitUpper.match(/^[A-Z]+-([A-Z])(\d+)\.(\d+)/);
+
+  if(match){
+    blok = "Blok " + match[1];
+    lantai = match[2];
+    noUnit = match[3];
+  }
+
+  /* =========================
+     CONTAINER PDF
+  ========================== */
 
   const el = document.createElement("div");
   el.style.fontFamily = "Arial";
@@ -640,11 +666,11 @@ function exportPDF(){
 
   <!-- BLOK RUSUN -->
   <table width="100%" border="1" cellspacing="0" cellpadding="5" style="margin-bottom:8px;">
-    <tr><td width="30%">Rusunawa</td><td>${d.rusunawa||'-'}</td></tr>
-    <tr><td>Type</td><td>${d.type||'-'}</td></tr>
-    <tr><td>Blok</td><td>${(d.unit||'').split('-')[1]?.charAt(0)||'-'}</td></tr>
-    <tr><td>Lantai</td><td>${(d.unit||'').split('.')[0]?.slice(-1)||'-'}</td></tr>
-    <tr><td>No Sarusunawa</td><td>${d.unit||'-'}</td></tr>
+    <tr><td width="30%">Rusunawa</td><td>${rusunawa}</td></tr>
+    <tr><td>Type</td><td>${d.type || "-"}</td></tr>
+    <tr><td>Blok</td><td>${blok}</td></tr>
+    <tr><td>Lantai</td><td>${lantai}</td></tr>
+    <tr><td>No Sarusunawa</td><td>${noUnit}</td></tr>
   </table>
 
   <!-- TARIF -->
@@ -662,7 +688,7 @@ function exportPDF(){
     <tr><td>Tanggal Berakhir</td><td>${fmtTanggal(d.riwayatPerjanjian?.[0]?.tgl_perjanjian_akhir_penghuni)}</td></tr>
   </table>
 
-  <!-- IDENTITAS 1-18 -->
+  <!-- IDENTITAS -->
   <table width="100%" border="1" cellspacing="0" cellpadding="5" style="margin-bottom:8px;">
     <tr><td width="5%">1</td><td width="35%">Nama Penghuni</td><td>${d.nama||'-'}</td></tr>
     <tr><td>2</td><td>NIK Penghuni</td><td>${d.nik||'-'}</td></tr>
@@ -681,7 +707,7 @@ function exportPDF(){
   </table>
 
   <!-- ANGGOTA KELUARGA -->
-  <div style="font-weight:bold;margin:10px 0;">Data Penghuni</div>
+  <div style="font-weight:bold;margin:10px 0;">Data Anggota Keluarga</div>
   <table width="100%" border="1" cellspacing="0" cellpadding="5">
     <tr>
       <th>Nama</th>
@@ -741,11 +767,3 @@ loadData();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
