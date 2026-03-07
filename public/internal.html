@@ -485,13 +485,59 @@ function renderRiwayatPembayaran(list){
   </div>`;
 }
 /* ========================================= */
+
+function renderRiwayatPdamSampah(obj){
+
+if(!obj || Object.keys(obj).length===0){
+return `<div class="text-slate-400 text-sm italic">
+Belum ada data PDAM / Sampah
+</div>`;
+}
+
+const rows = Object.entries(obj)
+.filter(([k])=>k!=="unit")
+.map(([k,v])=>{
+return `
+<tr class="border-b border-slate-800">
+<td class="px-3 py-2 text-slate-400">${k}</td>
+<td class="px-3 py-2 text-right">${v||'-'}</td>
+</tr>`;
+}).join("");
+
+return `
+<div class="overflow-x-auto border border-slate-800 rounded-lg">
+<table class="min-w-full text-xs md:text-sm">
+<thead class="bg-slate-900 border-b border-slate-800">
+<tr>
+<th class="px-3 py-2 text-left">Item</th>
+<th class="px-3 py-2 text-right">Nilai</th>
+</tr>
+</thead>
+<tbody>
+${rows}
+</tbody>
+</table>
+</div>
+`;
+}
+
 /* =================================================================== */
 
 function openDetail(d){
   judulDetail.innerText="Detail Penghuni - Unit "+d.unit;
 
-  detailBox.innerHTML=
-  section("IDENTITAS PENGHUNI",`
+
+detailBox.innerHTML=
+
+`
+<section class="bg-slate-800/60 p-4 rounded-xl text-center">
+<div class="text-slate-400 text-xs mb-2">STATUS UNIT</div>
+<div class="text-lg">${badgeStatus(d.kondisiunit)}</div>
+</section>
+`
+
++
+section("IDENTITAS PENGHUNI",`
     <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-x-4 gap-y-2">
       ${gridRow("Nama",d.nama)}
       ${gridRow("NIK",d.nik)}
@@ -592,28 +638,38 @@ function openDetail(d){
       ${gridRow("Status",d.statusPenjamin)}
     </div>
   `)+
-  section("STATUS KEUANGAN",`
+ section("STATUS KEUANGAN",`
+
     <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-x-4 gap-y-2">
-      ${gridRow("Total Bayar","Rp "+Number(d.pembayaran).toLocaleString("id-ID"))}
-      ${gridRow("Tunggakan","Rp "+Number(d.tunggakan).toLocaleString("id-ID"))}
+    ${gridRow("Total Bayar","Rp "+Number(d.pembayaran).toLocaleString("id-ID"))}
+    ${gridRow("Tunggakan","Rp "+Number(d.tunggakan).toLocaleString("id-ID"))}
     </div>
-    <div class="mt-4">
+
+  <div class="mt-6">
+
     <div class="text-slate-400 text-sm mb-2">Riwayat Pembayaran</div>
-      ${renderRiwayatPembayaran(d.riwayatPembayaran)}
-    <div class="mt-4">
-    <div class="text-slate-400 text-sm mb-2">Riwayat Tunggakan</div>
-      ${renderRiwayatTunggakan(d.riwayatPenghuniDetail)}
-    </div>
-  `)+
-  section("STATUS UNIT",`
-    <div class="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-x-4 gap-y-2">
-      ${gridRow("Kondisi Unit",d.kondisiunit)}
-    </div>
-      <div class="mt-4">
-      <div class="text-slate-400 text-sm mb-2">Detail Riwayat Penghuni</div>
-      ${renderRiwayatPenghuniDetailTable(d.riwayatPenghuniDetail)}
-    </div>
-    `);
+    ${renderRiwayatPembayaran(d.riwayatPembayaran)}
+
+  </div>
+
+  <div class="mt-6">
+
+  <div class="text-slate-400 text-sm mb-2">Riwayat Tunggakan Sewa</div>
+  ${renderRiwayatTunggakan(d.riwayatPenghuniDetail)}
+
+  </div>
+
+  <div class="mt-6">
+
+  <div class="text-slate-400 text-sm mb-2">Riwayat Tunggakan PDAM Sampah</div>
+  ${renderRiwayatPdamSampah(d.pdamSampah)}
+
+  </div>
+  `)
+  +
+  section("Detail Riwayat Penghuni",`
+  ${renderRiwayatPenghuniDetailTable(d.riwayatPenghuniDetail)}
+  `)
 
   modal.classList.remove("hidden");
   modal.classList.add("flex");
