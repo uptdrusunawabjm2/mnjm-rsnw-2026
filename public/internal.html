@@ -164,9 +164,12 @@ if(sessionStorage.getItem("RUSUN_LOGIN")!=="OK"){
 <th class="py-2 text-left">Nama</th>
 <th class="py-2 text-left">Status</th>
 <th class="py-2 text-left">Total Bayar</th>
-<th class="py-2 text-left">Total Tunggakan</th>
+<th class="py-2 text-left">Total Tunggakan Sewa</th>
+<th class="py-2 text-left">Total Tunggakan PDAM</th>
+<th class="py-2 text-left">Total Tunggakan Sampah</th>
 </tr>
 </thead>
+
 <tbody id="tbody"></tbody>
 </table>
 
@@ -274,27 +277,46 @@ renderTable();
 }
 
 function renderTable(){
-  tbody.innerHTML="";
-  const start=(currentPage-1)*rowsPerPage;
-  filteredData.slice(start,start+rowsPerPage).forEach(d=>{
-    tbody.innerHTML+=`
-    <tr class="border-b border-slate-800 hover:bg-slate-800">
-      <td class="py-1 uppercase text-blue-400 cursor-pointer font-bold data-unit"
-    data-unit="${d.unit}">
-    ${d.unit}
-</td>
-      <td>${d.nama}</td>
-      <td>${badgeStatus(d.kondisiunit)}</td>
-      <td>Rp ${Number(d.pembayaran).toLocaleString("id-ID")}</td>
-      <td>Rp ${Number(d.tunggakan).toLocaleString("id-ID")}</td>
-    </tr>`;
-  });
 
-document.querySelectorAll(".data-unit").forEach(el=>{
-  el.onclick = () => openDetailByUnit(el.dataset.unit);
+tbody.innerHTML="";
+
+const start = (currentPage-1) * rowsPerPage;
+
+filteredData.slice(start,start+rowsPerPage).forEach(d=>{
+
+let tunggakanSewa = Number(d.tunggakan || 0);
+let tunggakanPdam = Number(d?.pdamSampah?.["total pdam"] || 0);
+let tunggakanSampah = Number(d?.pdamSampah?.["total sampah"] || 0);
+
+tbody.innerHTML += `
+<tr class="border-b border-slate-800 hover:bg-slate-800">
+
+<td class="py-1 uppercase text-blue-400 cursor-pointer font-bold data-unit"
+data-unit="${d.unit}">
+${d.unit}
+</td>
+
+<td>${d.nama}</td>
+
+<td>${badgeStatus(d.kondisiunit)}</td>
+
+<td>Rp ${Number(d.pembayaran).toLocaleString("id-ID")}</td>
+
+<td>Rp ${tunggakanSewa.toLocaleString("id-ID")}</td>
+
+<td>Rp ${tunggakanPdam.toLocaleString("id-ID")}</td>
+
+<td>Rp ${tunggakanSampah.toLocaleString("id-ID")}</td>
+
+</tr>`;
 });
 
-  renderPagination();
+document.querySelectorAll(".data-unit").forEach(el=>{
+el.onclick = () => openDetailByUnit(el.dataset.unit);
+});
+
+renderPagination();
+
 }
 
 function openDetailByUnit(unit){
