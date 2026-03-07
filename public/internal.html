@@ -607,7 +607,7 @@ return `
 function openDetail(d){
 judulDetail.innerHTML =
 `Detail Penghuni - Unit ${String(d.unit).toUpperCase()}
-<span class="ml-3">${badgeStatus(d.kondisiunit).toUpperCase()}</span>`;
+<span class="ml-3">${badgeStatus(d.kondisiunit)}</span>`;
 
 
 detailBox.innerHTML =
@@ -740,8 +740,7 @@ section("IDENTITAS PENGHUNI",`
   ${renderRiwayatPdamSampah(d.pdamSampah)}
 
   </div>
-  `)
-  +
+ `) +
   section("Detail Riwayat Penghuni",`
   ${renderRiwayatPenghuniDetailTable(d.riwayatPenghuniDetail)}
   `)
