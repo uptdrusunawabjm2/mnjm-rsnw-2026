@@ -129,11 +129,13 @@ if(sessionStorage.getItem("RUSUN_LOGIN")!=="OK"){
   <h2 class="text-2xl font-bold">Dashboard Internal</h2>
 </div>
 
-<div class="grid grid-cols-4 gap-4 mb-8">
+<div class="grid grid-cols-6 gap-4 mb-8">
   <div class="bg-slate-800 p-4 rounded">Penghuni<br><b id="penghuni">-</b></div>
   <div class="bg-slate-800 p-4 rounded">Unit Terisi<br><b id="unitTerisi">-</b></div>
   <div class="bg-slate-800 p-4 rounded">Total Bayar<br><b id="totalBayar">Rp 0</b></div>
-  <div class="bg-slate-800 p-4 rounded">Total Tunggakan<br><b id="totalTunggakan">Rp 0</b></div>
+  <div class="bg-slate-800 p-4 rounded">Total Tunggakan Sewa<br><b id="totalTunggakanSewa">Rp 0</b></div>
+  <div class="bg-slate-800 p-4 rounded">Total Tunggakan PDAM<br><b id="totalTunggakanPdam">Rp 0</b></div>
+  <div class="bg-slate-800 p-4 rounded">Total Tunggakan Sampah<br><b id="totalTunggakanSampah">Rp 0</b></div>
 </div>
 
 <div class="bg-slate-900 rounded p-5">
@@ -208,7 +210,9 @@ function logout(){ sessionStorage.clear(); location.href="/login.html"; }
 const penghuni=document.getElementById("penghuni"),
 unitTerisi=document.getElementById("unitTerisi"),
 totalBayar=document.getElementById("totalBayar"),
-totalTunggakan=document.getElementById("totalTunggakan"),
+totalTunggakanSewa=document.getElementById("totalTunggakanSewa"),
+totalTunggakanPdam=document.getElementById("totalTunggakanPdam"),
+totalTunggakanSampah=document.getElementById("totalTunggakanSampah"),
 tbody=document.getElementById("tbody"),
 searchInput=document.getElementById("searchInput"),
 statusFilter=document.getElementById("statusFilter"),
@@ -227,9 +231,26 @@ async function loadData(){
   penghuni.innerText=sum.penghuni;
   unitTerisi.innerText=sum.terisi;
   totalBayar.innerText="Rp "+Number(sum.totalBayar).toLocaleString("id-ID");
-  totalTunggakan.innerText="Rp "+Number(sum.totalTunggakan).toLocaleString("id-ID");
   allData=data;filteredData=data;renderTable();
-}
+    let totalSewa = 0;
+    let totalPdam = 0;
+    let totalSampah = 0;
+
+    data.forEach(d=>{
+    totalSewa += Number(d.tunggakan || 0);
+    totalPdam += Number(d?.pdamSampah?.["total pdam"] || 0);
+    totalSampah += Number(d?.pdamSampah?.["total sampah"] || 0);
+    });
+
+    totalTunggakanSewa.innerText =
+    "Rp " + totalSewa.toLocaleString("id-ID");
+
+    totalTunggakanPdam.innerText =
+    "Rp " + totalPdam.toLocaleString("id-ID");
+
+    totalTunggakanSampah.innerText =
+    "Rp " + totalSampah.toLocaleString("id-ID");
+    }
 
 function badgeStatus(status){
   if(!status) return "-";
